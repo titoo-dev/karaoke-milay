@@ -8,10 +8,10 @@ import {
 	separateAudio,
 	notifications,
 } from '@/data/api';
-import { Header } from '@/components/Header';
 import { AudioUploadCard } from '@/components/audio-upload-card';
 import { OutputTracksCard } from '@/components/output-tracks-card';
 import { Footer } from '@/components/footer';
+import { Header } from '@/components/header';
 
 export const Route = createFileRoute('/')({
 	component: App,
