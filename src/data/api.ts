@@ -65,7 +65,7 @@ export function getOutputPath(
 ): string {
 	if (!uploadedFileName) return '';
 	const rawFileName = uploadedFileName.split('.')[0];
-	return `${BASE_URL}/outputs/htdemucs/${rawFileName}/${trackType}.mp3`;
+	return `${BASE_URL}/output/htdemucs/${rawFileName}/${trackType}.mp3`;
 }
 
 /**
