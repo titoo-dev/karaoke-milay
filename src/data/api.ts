@@ -1,8 +1,8 @@
 import { toast } from 'sonner';
 
 // API base URL - adjust based on your environment
-const BASE_URL =
-	import.meta.env.VITE_DEFAULT_REST_API_URL || 'http://localhost:8000';
+export const BASE_URL =
+	import.meta.env.VITE_DEFAULT_REST_API_URL || 'http://localhost:8000/api';
 
 type UploadResponse = {
 	file: {
@@ -44,7 +44,7 @@ export async function uploadAudioFile(file: File): Promise<UploadResponse> {
 export async function separateAudio(
 	filename: string
 ): Promise<SeparationResponse> {
-	const response = await fetch(`${BASE_URL}/separate/${filename}`, {
+	const response = await fetch(`${BASE_URL}/audio/separate/${filename}`, {
 		method: 'POST',
 	});
 
@@ -65,7 +65,7 @@ export function getOutputPath(
 ): string {
 	if (!uploadedFileName) return '';
 	const rawFileName = uploadedFileName.split('.')[0];
-	return `${BASE_URL}/output/htdemucs/${rawFileName}/${trackType}.mp3`;
+	return `${BASE_URL}/audio/htdemucs/${rawFileName}/${trackType}.mp3`;
 }
 
 /**

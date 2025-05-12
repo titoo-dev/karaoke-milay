@@ -9,6 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+import { BASE_URL } from '@/data/api';
 
 interface ProcessingStatus {
 	status: 'started' | 'processing' | 'completed' | 'failed' | 'error';
@@ -28,10 +29,11 @@ export function ProcessingIndicator() {
 	});
 
 	useEffect(() => {
-		const eventSource = new EventSource('http://localhost:8000/stream');
+		const eventSource = new EventSource(`${BASE_URL}/audio/stream`);
 
 		eventSource.addEventListener('separation-progress', (event) => {
 			const data = JSON.parse(event.data);
+			console.log('Separation progress:', data);
 			setStatus(data);
 		});
 
@@ -66,14 +68,11 @@ export function ProcessingIndicator() {
 						{status.status}
 					</Badge>
 				</CardTitle>
-				<CardDescription>{status.message}</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<Progress value={status.progress} className="h-2 mb-4" />
 				<div className="text-sm text-muted-foreground">
-					{status.status === 'processing' && (
-						<p>Processing: {status.progress}% complete</p>
-					)}
+					{status.status === 'processing' && <p>{status.message}</p>}
 					{status.status === 'started' && (
 						<p>Preparing audio files for separation...</p>
 					)}
