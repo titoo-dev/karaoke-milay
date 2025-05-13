@@ -37,7 +37,7 @@ export function OutputTracks({
 			<TrackPlayer
 				title="Instrumental Track"
 				icon={Music}
-				iconColor="text-secondary"
+				iconColor="text-primary"
 				src={getOutputPath(instrumentalOutputPath)}
 			/>
 
