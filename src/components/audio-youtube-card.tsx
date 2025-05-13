@@ -168,7 +168,7 @@ export function AudioYoutubeCard({
 							onChange={handleUrlChange}
 							disabled={
 								separateYoutubeMutation.isPending ||
-								!separationResponse
+								separationResponse
 							}
 							className={cn(
 								isValidating &&
@@ -319,7 +319,7 @@ export function AudioYoutubeCard({
 						!isUrlValid ||
 						isValidating ||
 						separateYoutubeMutation.isPending ||
-						!separationResponse
+						separationResponse
 					}
 					onClick={handleSeparate}
 					className="w-full"
