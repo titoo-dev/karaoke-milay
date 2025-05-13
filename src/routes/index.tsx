@@ -42,12 +42,15 @@ function App() {
 	// Separation mutation
 	const separateMutation = useMutation({
 		mutationFn: separateAudio,
-		onSuccess: () => {
+		onSuccess: (data) => {
+			console.log('Separation successful:', data);
 			notifications.separationSuccess();
 		},
 		onError: (error) => {
+			console.error('Separation error:', error);
 			notifications.separationError(error as Error);
 		},
+		retry: false,
 	});
 
 	// Handle file selection
@@ -82,6 +85,13 @@ function App() {
 		setUploadedFileName(null);
 	};
 
+	// Handle tab change with separation pending check
+	const handleTabChange = (tab: 'upload' | 'youtube') => {
+		if (!separateMutation.isPending) {
+			setActiveTab(tab);
+		}
+	};
+
 	return (
 		<div className="flex min-h-screen flex-col bg-gradient-to-b from-background to-background/90">
 			<Header />
@@ -90,13 +100,14 @@ function App() {
 				<div className="mb-8">
 					<div className="inline-flex items-center justify-center rounded-lg border border-border bg-card p-1.5 shadow-sm">
 						<button
-							onClick={() => setActiveTab('upload')}
+							onClick={() => handleTabChange('upload')}
 							className={cn(
 								'inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
 								activeTab === 'upload'
 									? 'bg-primary text-primary-foreground shadow-sm'
 									: 'text-muted-foreground hover:bg-muted'
 							)}
+							disabled={separateMutation.isPending}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -120,13 +131,16 @@ function App() {
 							File Upload
 						</button>
 						<button
-							onClick={() => setActiveTab('youtube')}
+							onClick={() => handleTabChange('youtube')}
 							className={cn(
 								'inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ml-2',
 								activeTab === 'youtube'
 									? 'bg-primary text-primary-foreground shadow-sm'
-									: 'text-muted-foreground hover:bg-muted'
+									: 'text-muted-foreground hover:bg-muted',
+								separateMutation.isPending &&
+									'opacity-50 cursor-not-allowed'
 							)}
+							disabled={separateMutation.isPending}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
