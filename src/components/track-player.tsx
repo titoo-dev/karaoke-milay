@@ -10,13 +10,13 @@ export function TrackPlayer({
 	icon: Icon,
 	iconColor,
 	src,
-	showDownload = true, // Added prop with default value
+	showDownload = true,
 }: {
 	title: string;
 	icon: React.ComponentType<any>;
 	iconColor: string;
 	src: string;
-	showDownload?: boolean; // Added optional prop
+	showDownload?: boolean;
 }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -27,7 +27,6 @@ export function TrackPlayer({
 	const [waveBars, setWaveBars] = useState<number[]>([]);
 
 	useEffect(() => {
-		// Generate random waveform pattern
 		const bars = Array.from(
 			{ length: 50 },
 			() => Math.random() * 0.8 + 0.2
@@ -70,6 +69,14 @@ export function TrackPlayer({
 		}
 	};
 
+	const handleWaveBarClick = (index: number) => {
+		if (audioRef.current && duration) {
+			const newTime = (index / waveBars.length) * duration;
+			audioRef.current.currentTime = newTime;
+			setCurrentTime(newTime);
+		}
+	};
+
 	const handleVolumeChange = (value: number[]) => {
 		const newVolume = value[0];
 		setVolume(newVolume);
@@ -98,7 +105,7 @@ export function TrackPlayer({
 					<Icon className={`h-5 w-5 ${iconColor}`} />
 					{title}
 				</h3>
-				{showDownload && ( // Added conditional rendering
+				{showDownload && (
 					<Button
 						variant="ghost"
 						size="icon"
@@ -118,7 +125,7 @@ export function TrackPlayer({
 					<div
 						key={index}
 						className={cn(
-							'h-full w-full transition-all duration-300',
+							'h-full w-full transition-all duration-300 hover:opacity-70 cursor-pointer',
 							index <
 								waveBars.length * (currentTime / duration || 0)
 								? 'bg-primary'
@@ -136,6 +143,7 @@ export function TrackPlayer({
 									? '0.8'
 									: undefined,
 						}}
+						onClick={() => handleWaveBarClick(index)}
 					/>
 				))}
 			</div>
