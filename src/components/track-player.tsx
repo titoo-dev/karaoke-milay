@@ -90,7 +90,7 @@ export function TrackPlayer({
 	};
 
 	return (
-		<div className="rounded-lg border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+		<div className="rounded-lg border bg-card p-5">
 			<div className="mb-4 flex items-center justify-between">
 				<h3 className="flex items-center gap-2 font-semibold">
 					<Icon className={`h-5 w-5 ${iconColor}`} />
@@ -160,7 +160,7 @@ export function TrackPlayer({
 					max={duration || 100}
 					step={0.1}
 					onValueChange={handleTimeChange}
-					className="flex-1"
+					className="flex-1 hover:cursor-pointer"
 				/>
 
 				<span className="w-10 text-xs text-muted-foreground">

@@ -96,10 +96,8 @@ export function getOutputPath(filePath?: string): string {
  * @param url URL of the audio file to download
  * @param filename Name to save the file as
  */
-export async function downloadAudioFile(path: string): Promise<void> {
+export async function downloadAudioFile(url: string): Promise<void> {
 	try {
-		const url = getOutputPath(path);
-
 		// Fetch the file
 		const response = await fetch(url);
 
@@ -111,7 +109,7 @@ export async function downloadAudioFile(path: string): Promise<void> {
 		const blob = await response.blob();
 
 		// Extract filename from the path
-		const filename = path.split('/').pop() || 'download';
+		const filename = url.split('/').pop() || 'download';
 
 		// Create a temporary download link
 		const downloadUrl = window.URL.createObjectURL(blob);
