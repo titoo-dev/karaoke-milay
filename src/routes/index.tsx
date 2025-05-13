@@ -6,7 +6,9 @@ import {
 	// Import the API functions
 	uploadAudioFile,
 	separateAudio,
+	separateYoutubeAudio,
 	notifications,
+	type SeparationResponse,
 } from '@/data/api';
 import { AudioUploadCard } from '@/components/audio-upload-card';
 import { OutputTracksCard } from '@/components/output-tracks-card';
@@ -26,6 +28,8 @@ function App() {
 		null
 	);
 	const [activeTab, setActiveTab] = useState<'upload' | 'youtube'>('upload');
+	const [separationResponse, setSeparationResponse] =
+		useState<SeparationResponse | null>(null);
 
 	// File upload mutation
 	const uploadMutation = useMutation({
@@ -44,6 +48,7 @@ function App() {
 		mutationFn: separateAudio,
 		onSuccess: (data) => {
 			console.log('Separation successful:', data);
+			setSeparationResponse(data);
 			notifications.separationSuccess();
 		},
 		onError: (error) => {
@@ -52,6 +57,27 @@ function App() {
 		},
 		retry: false,
 	});
+
+	// YouTube separation mutation
+	const separateYoutubeMutation = useMutation({
+		mutationFn: separateYoutubeAudio,
+		onSuccess: (data) => {
+			console.log('YouTube separation successful:', data);
+			setSeparationResponse(data);
+			notifications.youtubeSeparationSuccess();
+		},
+		onError: (error) => {
+			console.error('YouTube separation error:', error);
+			notifications.youtubeSeparationError(error as Error);
+		},
+		retry: false,
+	});
+
+	// Handle YouTube separation
+	const handleSeparateYoutube = (url: string) => {
+		notifications.youtubeSeparationStart();
+		separateYoutubeMutation.mutate(url);
+	};
 
 	// Handle file selection
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,15 +105,17 @@ function App() {
 	// Reset state
 	const resetState = () => {
 		separateMutation.reset();
+		separateYoutubeMutation.reset();
 		uploadMutation.reset();
 		setFile(null);
 		setAudioUrl(null);
 		setUploadedFileName(null);
+		setSeparationResponse(null);
 	};
 
 	// Handle tab change with separation pending check
 	const handleTabChange = (tab: 'upload' | 'youtube') => {
-		if (!separateMutation.isPending) {
+		if (!separateMutation.isPending && !separateYoutubeMutation.isPending) {
 			setActiveTab(tab);
 		}
 	};
@@ -105,9 +133,15 @@ function App() {
 								'inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
 								activeTab === 'upload'
 									? 'bg-primary text-primary-foreground shadow-sm'
-									: 'text-muted-foreground hover:bg-muted'
+									: 'text-muted-foreground hover:bg-muted',
+								separateMutation.isPending ||
+									(separateYoutubeMutation.isPending &&
+										'opacity-50 cursor-not-allowed')
 							)}
-							disabled={separateMutation.isPending}
+							disabled={
+								separateMutation.isPending ||
+								separateYoutubeMutation.isPending
+							}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -137,10 +171,14 @@ function App() {
 								activeTab === 'youtube'
 									? 'bg-primary text-primary-foreground shadow-sm'
 									: 'text-muted-foreground hover:bg-muted',
-								separateMutation.isPending &&
-									'opacity-50 cursor-not-allowed'
+								separateMutation.isPending ||
+									(separateYoutubeMutation.isPending &&
+										'opacity-50 cursor-not-allowed')
 							)}
-							disabled={separateMutation.isPending}
+							disabled={
+								separateMutation.isPending ||
+								separateYoutubeMutation.isPending
+							}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -178,13 +216,17 @@ function App() {
 							handleSeparate={handleSeparate}
 						/>
 					) : (
-						<AudioYoutubeCard />
+						<AudioYoutubeCard
+							separationResponse={separationResponse}
+							separateYoutubeMutation={separateYoutubeMutation}
+							handleSeparateYoutube={handleSeparateYoutube}
+						/>
 					)}
 
 					<OutputTracksCard
-						file={file}
-						uploadedFileName={uploadedFileName}
+						separationResponse={separationResponse}
 						separateMutation={separateMutation}
+						separateYoutubeMutation={separateYoutubeMutation}
 						resetState={resetState}
 					/>
 				</div>

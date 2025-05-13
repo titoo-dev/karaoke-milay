@@ -9,18 +9,31 @@ import {
 import { EmptyOutputState } from './empty-output-state';
 import { ProcessingIndicator } from './progress-indicator';
 import { OutputTracks } from './output-tracks';
+import type { SeparationResponse } from '@/data/api';
 
 export function OutputTracksCard({
-	file,
-	uploadedFileName,
+	separationResponse,
 	separateMutation,
+	separateYoutubeMutation,
 	resetState,
 }: {
-	file: File | null;
-	uploadedFileName: string | null;
+	separationResponse: SeparationResponse | null;
 	separateMutation: any;
+	separateYoutubeMutation: any;
 	resetState: () => void;
 }) {
+	// Check if any separation process has completed successfully
+	const isSuccess =
+		separateMutation.isSuccess || separateYoutubeMutation?.isSuccess;
+
+	// Check if any separation process is in progress
+	const isProcessing =
+		separateMutation.isPending || separateYoutubeMutation.isPending;
+
+	console.log('Separation response:', separationResponse);
+	console.log('Is success:', isSuccess);
+	console.log('Is processing:', isProcessing);
+
 	return (
 		<Card>
 			<CardHeader>
@@ -33,19 +46,20 @@ export function OutputTracksCard({
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6">
-				{!file && !separateMutation.isSuccess ? (
-					<EmptyOutputState />
-				) : (
-					<>
-						{separateMutation.isPending && <ProcessingIndicator />}
+				{isProcessing && <ProcessingIndicator />}
 
-						{separateMutation.isSuccess && uploadedFileName && (
-							<OutputTracks
-								uploadedFileName={uploadedFileName}
-								resetState={resetState}
-							/>
-						)}
-					</>
+				{isSuccess && separationResponse && (
+					<OutputTracks
+						vocalOutputPath={separationResponse.files.vocals}
+						instrumentalOutputPath={
+							separationResponse.files.instrumental
+						}
+						resetState={resetState}
+					/>
+				)}
+
+				{separationResponse === null && !isProcessing && !isSuccess && (
+					<EmptyOutputState />
 				)}
 			</CardContent>
 		</Card>

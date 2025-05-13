@@ -11,11 +11,14 @@ type UploadResponse = {
 	};
 };
 
-type SeparationResponse = {
-	success: boolean;
+export type SeparationResponse = {
+	success?: boolean;
 	message: string;
-	vocalPath?: string;
-	instrumentalPath?: string;
+	files: {
+		vocals?: string;
+		instrumental?: string;
+	};
+	filename?: string;
 };
 
 /**
@@ -57,15 +60,35 @@ export async function separateAudio(
 }
 
 /**
+ * Separates vocals from instrumental from a YouTube URL
+ */
+export async function separateYoutubeAudio(
+	youtubeUrl: string
+): Promise<SeparationResponse> {
+	const response = await fetch(`${BASE_URL}/audio/separate-youtube`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ url: youtubeUrl }),
+	});
+
+	if (!response.ok) {
+		const error = await response.json();
+		throw new Error(error.message || 'YouTube audio separation failed');
+	}
+
+	return response.json();
+}
+
+/**
  * Gets the output file path for a specific track type
  */
-export function getOutputPath(
-	uploadedFileName: string | null,
-	trackType: 'vocals' | 'no_vocals'
-): string {
-	if (!uploadedFileName) return '';
-	const rawFileName = uploadedFileName.split('.')[0];
-	return `${BASE_URL}/audio/htdemucs/${rawFileName}/${trackType}.mp3`;
+export function getOutputPath(filePath?: string): string {
+	if (!filePath) {
+		return '';
+	}
+	return `${BASE_URL}/audio/${filePath}`;
 }
 
 /**
@@ -73,12 +96,9 @@ export function getOutputPath(
  * @param url URL of the audio file to download
  * @param filename Name to save the file as
  */
-export async function downloadAudioFile(
-	type: 'vocals' | 'no_vocals',
-	filename: string
-): Promise<void> {
+export async function downloadAudioFile(path: string): Promise<void> {
 	try {
-		const url = getOutputPath(filename, type);
+		const url = getOutputPath(path);
 
 		// Fetch the file
 		const response = await fetch(url);
@@ -89,6 +109,9 @@ export async function downloadAudioFile(
 
 		// Get the blob from the response
 		const blob = await response.blob();
+
+		// Extract filename from the path
+		const filename = path.split('/').pop() || 'download';
 
 		// Create a temporary download link
 		const downloadUrl = window.URL.createObjectURL(blob);
@@ -139,6 +162,26 @@ export const notifications = {
 
 	separationError: (error: Error) => {
 		toast.error('Separation failed', {
+			description: error.message,
+		});
+	},
+
+	youtubeSeparationStart: () => {
+		toast.info('Processing YouTube audio', {
+			description: 'This may take a few minutes. Please wait...',
+		});
+	},
+
+	youtubeSeparationSuccess: (videoTitle?: string) => {
+		toast.success('YouTube audio separation complete', {
+			description: videoTitle
+				? `Successfully processed "${videoTitle}". Tracks are ready for download.`
+				: 'Vocals and instrumental tracks are ready for download.',
+		});
+	},
+
+	youtubeSeparationError: (error: Error) => {
+		toast.error('YouTube separation failed', {
 			description: error.message,
 		});
 	},

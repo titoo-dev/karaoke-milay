@@ -1,4 +1,4 @@
-import { Youtube } from 'lucide-react';
+import { Loader2, Youtube } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -11,6 +11,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from './ui/card';
+import type { SeparationResponse } from '@/data/api';
 
 // Simple YouTube URL validator
 const isValidYoutubeUrl = (url: string): boolean => {
@@ -19,7 +20,15 @@ const isValidYoutubeUrl = (url: string): boolean => {
 	return regExp.test(url);
 };
 
-export function AudioYoutubeCard() {
+export function AudioYoutubeCard({
+	separateYoutubeMutation,
+	handleSeparateYoutube,
+	separationResponse,
+}: {
+	separateYoutubeMutation: any;
+	handleSeparateYoutube: (url: string, videoTitle?: string | null) => void;
+	separationResponse: SeparationResponse | null;
+}) {
 	const [youtubeUrl, setYoutubeUrl] = useState('');
 	const [isUrlValid, setIsUrlValid] = useState(false);
 	const [isValidating, setIsValidating] = useState(false);
@@ -123,8 +132,11 @@ export function AudioYoutubeCard() {
 	};
 
 	const handleSeparate = () => {
-		// This would connect to your separation functionality
-		console.log('Separating YouTube audio:', youtubeUrl);
+		if (isUrlValid && youtubeUrl) {
+			// Pass video title if available for better notification
+			const videoTitle = videoMetadata?.title || null;
+			handleSeparateYoutube(youtubeUrl, videoTitle);
+		}
 	};
 
 	// Format duration in MM:SS
@@ -154,6 +166,10 @@ export function AudioYoutubeCard() {
 							placeholder="https://www.youtube.com/watch?v=..."
 							value={youtubeUrl}
 							onChange={handleUrlChange}
+							disabled={
+								separateYoutubeMutation.isPending ||
+								!separationResponse
+							}
 							className={cn(
 								isValidating &&
 									'border-amber-500 ring-amber-500/20',
@@ -168,7 +184,8 @@ export function AudioYoutubeCard() {
 						/>
 						{isValidating && (
 							<div className="absolute right-3 top-0 h-full flex items-center">
-								<span className="text-xs text-amber-500">
+								<span className="flex items-center text-xs text-amber-500">
+									<Loader2 className="mr-1 h-3 w-3 animate-spin" />
 									Validating...
 								</span>
 							</div>
@@ -296,16 +313,26 @@ export function AudioYoutubeCard() {
 					</div>
 				)}
 
-				<div className="flex justify-end">
-					<Button
-						variant="default"
-						disabled={!isUrlValid || isValidating}
-						onClick={handleSeparate}
-						className="space-x-2"
-					>
-						<span>Separate Audio</span>
-					</Button>
-				</div>
+				<Button
+					variant="default"
+					disabled={
+						!isUrlValid ||
+						isValidating ||
+						separateYoutubeMutation.isPending ||
+						!separationResponse
+					}
+					onClick={handleSeparate}
+					className="w-full"
+				>
+					{separateYoutubeMutation.isPending ? (
+						<>
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							Processing YouTube Audio...
+						</>
+					) : (
+						<>Separate Audio</>
+					)}
+				</Button>
 			</CardContent>
 		</Card>
 	);

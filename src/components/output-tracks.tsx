@@ -15,10 +15,12 @@ import {
 } from './ui/alert-dialog';
 
 export function OutputTracks({
-	uploadedFileName,
 	resetState,
+	instrumentalOutputPath,
+	vocalOutputPath,
 }: {
-	uploadedFileName: string;
+	vocalOutputPath?: string;
+	instrumentalOutputPath?: string;
 	resetState: () => void;
 }) {
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -29,18 +31,14 @@ export function OutputTracks({
 				title="Vocals Track"
 				icon={Mic}
 				iconColor="text-primary"
-				src={getOutputPath(uploadedFileName, 'vocals')}
-				downloadType="vocals"
-				fileName={uploadedFileName}
+				src={getOutputPath(vocalOutputPath)}
 			/>
 
 			<TrackPlayer
 				title="Instrumental Track"
 				icon={Music}
 				iconColor="text-secondary"
-				src={getOutputPath(uploadedFileName, 'no_vocals')}
-				downloadType="no_vocals"
-				fileName={uploadedFileName}
+				src={getOutputPath(instrumentalOutputPath)}
 			/>
 
 			<Button

@@ -7,15 +7,11 @@ export function TrackPlayer({
 	icon: Icon,
 	iconColor,
 	src,
-	downloadType,
-	fileName,
 }: {
 	title: string;
 	icon: React.ComponentType<any>;
 	iconColor: string;
 	src: string;
-	downloadType: 'vocals' | 'no_vocals';
-	fileName: string;
 }) {
 	return (
 		<div className="rounded-lg border bg-card p-4 shadow-sm">
@@ -29,7 +25,7 @@ export function TrackPlayer({
 				size="sm"
 				className="w-full"
 				onClick={() => {
-					downloadAudioFile(downloadType, fileName);
+					downloadAudioFile(src);
 				}}
 			>
 				<Download className="mr-2 h-4 w-4" />

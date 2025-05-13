@@ -2,12 +2,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BASE_URL } from '@/data/api';
 
 interface ProcessingStatus {
@@ -27,6 +22,14 @@ export function ProcessingIndicator() {
 		progress: 0,
 	});
 
+	const [downloadProgress, setDownloadProgress] = useState<{
+		progress: number;
+		message: string;
+	}>({
+		progress: 0,
+		message: 'Preparing to download',
+	});
+
 	useEffect(() => {
 		const eventSource = new EventSource(`${BASE_URL}/audio/stream`);
 
@@ -34,6 +37,12 @@ export function ProcessingIndicator() {
 			const data = JSON.parse(event.data);
 			console.log('Separation progress:', data);
 			setStatus(data);
+		});
+
+		eventSource.addEventListener('download-progress', (event) => {
+			const data = JSON.parse(event.data);
+			console.log('Download progress:', data);
+			setDownloadProgress(data);
 		});
 
 		return () => {
@@ -69,6 +78,25 @@ export function ProcessingIndicator() {
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
+				{downloadProgress.progress > 0 &&
+					downloadProgress.progress < 100 && (
+						<div className="mb-4">
+							<div className="flex justify-between text-sm mb-1">
+								<span>Downloading YouTube video</span>
+								<span>
+									{Math.round(downloadProgress.progress)}%
+								</span>
+							</div>
+							<Progress
+								value={downloadProgress.progress}
+								className="h-2"
+							/>
+							<p className="text-xs text-muted-foreground mt-1">
+								{downloadProgress.message}
+							</p>
+						</div>
+					)}
+
 				<Progress value={status.progress} className="h-2 mb-4" />
 				<div className="text-sm text-muted-foreground">
 					{status.status === 'processing' && <p>{status.message}</p>}
