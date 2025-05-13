@@ -22,17 +22,11 @@ export function OutputTracksCard({
 	separateYoutubeMutation: any;
 	resetState: () => void;
 }) {
-	// Check if any separation process has completed successfully
 	const isSuccess =
 		separateMutation.isSuccess || separateYoutubeMutation?.isSuccess;
 
-	// Check if any separation process is in progress
 	const isProcessing =
 		separateMutation.isPending || separateYoutubeMutation.isPending;
-
-	console.log('Separation response:', separationResponse);
-	console.log('Is success:', isSuccess);
-	console.log('Is processing:', isProcessing);
 
 	return (
 		<Card>

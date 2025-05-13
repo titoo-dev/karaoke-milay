@@ -47,7 +47,6 @@ function App() {
 	const separateMutation = useMutation({
 		mutationFn: separateAudio,
 		onSuccess: (data) => {
-			console.log('Separation successful:', data);
 			setSeparationResponse(data);
 			notifications.separationSuccess();
 		},
@@ -62,7 +61,6 @@ function App() {
 	const separateYoutubeMutation = useMutation({
 		mutationFn: separateYoutubeAudio,
 		onSuccess: (data) => {
-			console.log('YouTube separation successful:', data);
 			setSeparationResponse(data);
 			notifications.youtubeSeparationSuccess();
 		},

@@ -35,13 +35,11 @@ export function ProcessingIndicator() {
 
 		eventSource.addEventListener('separation-progress', (event) => {
 			const data = JSON.parse(event.data);
-			console.log('Separation progress:', data);
 			setStatus(data);
 		});
 
 		eventSource.addEventListener('download-progress', (event) => {
 			const data = JSON.parse(event.data);
-			console.log('Download progress:', data);
 			setDownloadProgress(data);
 		});
 
