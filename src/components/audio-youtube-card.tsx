@@ -1,5 +1,4 @@
 import { Loader2, Youtube } from 'lucide-react';
-import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { cn } from '@/lib/utils';
@@ -12,123 +11,48 @@ import {
 	CardTitle,
 } from './ui/card';
 import type { SeparationResponse } from '@/data/api';
+import { useState } from 'react';
 
-// Simple YouTube URL validator
-const isValidYoutubeUrl = (url: string): boolean => {
-	const regExp =
-		/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
-	return regExp.test(url);
-};
+interface VideoMetadata {
+	title: string;
+	author_name: string;
+	duration?: number;
+	width: number;
+	height: number;
+	thumbnail_url: string;
+}
+
+interface AudioYoutubeCardProps {
+	separateYoutubeMutation: any;
+	handleSeparateYoutube: (url: string, videoTitle?: string | null) => void;
+	separationResponse: SeparationResponse | null;
+	youtubeUrl: string;
+	isUrlValid: boolean;
+	isValidating: boolean;
+	validationMessage: string;
+	videoMetadata: VideoMetadata | null;
+	handleUrlChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
 export function AudioYoutubeCard({
 	separateYoutubeMutation,
 	handleSeparateYoutube,
 	separationResponse,
-}: {
-	separateYoutubeMutation: any;
-	handleSeparateYoutube: (url: string, videoTitle?: string | null) => void;
-	separationResponse: SeparationResponse | null;
-}) {
-	const [youtubeUrl, setYoutubeUrl] = useState('');
-	const [isUrlValid, setIsUrlValid] = useState(false);
-	const [isValidating, setIsValidating] = useState(false);
-	const [validationMessage, setValidationMessage] = useState('');
-	const [videoMetadata, setVideoMetadata] = useState<{
-		title: string;
-		author_name: string;
-		duration?: number;
-		width: number;
-		height: number;
-		thumbnail_url: string;
-	} | null>(null);
+	youtubeUrl,
+	isUrlValid,
+	isValidating,
+	validationMessage,
+	videoMetadata,
+	handleUrlChange,
+}: AudioYoutubeCardProps) {
 	const [isMetadataOpen, setIsMetadataOpen] = useState(false);
 
-	// Extract video ID from YouTube URL
+	// Extract video ID from YouTube URL - needed for fallback thumbnail
 	const extractVideoId = (url: string): string | null => {
 		const regExp =
 			/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
 		const match = url.match(regExp);
 		return match ? match[1] : null;
-	};
-
-	// Check if YouTube video exists and fetch metadata
-	const checkVideoExists = async (videoId: string): Promise<boolean> => {
-		try {
-			// Using YouTube's oEmbed API to check if video exists and get metadata
-			const response = await fetch(
-				`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
-			);
-
-			if (response.ok) {
-				const data = await response.json();
-				setVideoMetadata(data);
-				return true;
-			}
-			setVideoMetadata(null);
-			return false;
-		} catch (error) {
-			console.error('Error checking YouTube video:', error);
-			setVideoMetadata(null);
-			return false;
-		}
-	};
-
-	const validateYoutubeUrl = async (url: string) => {
-		// First check if URL format is valid
-		if (!isValidYoutubeUrl(url)) {
-			setIsUrlValid(false);
-			setValidationMessage('Please enter a valid YouTube URL');
-			setVideoMetadata(null);
-			return;
-		}
-
-		// Then extract video ID and check if video exists
-		const videoId = extractVideoId(url);
-		if (!videoId) {
-			setIsUrlValid(false);
-			setValidationMessage('Could not extract video ID from URL');
-			setVideoMetadata(null);
-			return;
-		}
-
-		// Check if video exists
-		const exists = await checkVideoExists(videoId);
-		if (!exists) {
-			setIsUrlValid(false);
-			setValidationMessage(
-				'This YouTube video is unavailable or private'
-			);
-			return;
-		}
-
-		// All checks passed
-		setIsUrlValid(true);
-		setValidationMessage('Valid YouTube URL! Ready to separate audio.');
-	};
-
-	const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const newUrl = event.target.value;
-		setYoutubeUrl(newUrl);
-
-		// Auto-validate the URL as user types
-		if (newUrl) {
-			setIsValidating(true);
-			setValidationMessage('');
-			setVideoMetadata(null);
-
-			// Short debounce for validation
-			const timer = setTimeout(async () => {
-				await validateYoutubeUrl(newUrl);
-				setIsValidating(false);
-			}, 500);
-
-			return () => clearTimeout(timer);
-		} else {
-			setIsUrlValid(false);
-			setIsValidating(false);
-			setValidationMessage('');
-			setVideoMetadata(null);
-		}
 	};
 
 	const handleSeparate = () => {

@@ -17,6 +17,31 @@ import { Header } from '@/components/header';
 import { AudioYoutubeCard } from '@/components/audio-youtube-card';
 import { cn } from '@/lib/utils';
 
+// Add interface for video metadata
+interface VideoMetadata {
+	title: string;
+	author_name: string;
+	duration?: number;
+	width: number;
+	height: number;
+	thumbnail_url: string;
+}
+
+// YouTube URL validator
+const isValidYoutubeUrl = (url: string): boolean => {
+	const regExp =
+		/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
+	return regExp.test(url);
+};
+
+// Extract video ID from YouTube URL
+const extractVideoId = (url: string): string | null => {
+	const regExp =
+		/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
+	const match = url.match(regExp);
+	return match ? match[1] : null;
+};
+
 export const Route = createFileRoute('/')({
 	component: App,
 });
@@ -30,6 +55,13 @@ function App() {
 	const [activeTab, setActiveTab] = useState<'upload' | 'youtube'>('upload');
 	const [separationResponse, setSeparationResponse] =
 		useState<SeparationResponse | null>(null);
+	const [youtubeUrl, setYoutubeUrl] = useState('');
+	const [isUrlValid, setIsUrlValid] = useState(false);
+	const [isValidating, setIsValidating] = useState(false);
+	const [validationMessage, setValidationMessage] = useState('');
+	const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(
+		null
+	);
 
 	// File upload mutation
 	const uploadMutation = useMutation({
@@ -70,6 +102,81 @@ function App() {
 		},
 		retry: false,
 	});
+
+	// Check if YouTube video exists and fetch metadata
+	const checkVideoExists = async (videoId: string): Promise<boolean> => {
+		try {
+			const response = await fetch(
+				`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+			);
+
+			if (response.ok) {
+				const data = await response.json();
+				setVideoMetadata(data);
+				return true;
+			}
+			setVideoMetadata(null);
+			return false;
+		} catch (error) {
+			console.error('Error checking YouTube video:', error);
+			setVideoMetadata(null);
+			return false;
+		}
+	};
+
+	const validateYoutubeUrl = async (url: string) => {
+		if (!isValidYoutubeUrl(url)) {
+			setIsUrlValid(false);
+			setValidationMessage('Please enter a valid YouTube URL');
+			setVideoMetadata(null);
+			return;
+		}
+
+		const videoId = extractVideoId(url);
+		if (!videoId) {
+			setIsUrlValid(false);
+			setValidationMessage('Could not extract video ID from URL');
+			setVideoMetadata(null);
+			return;
+		}
+
+		const exists = await checkVideoExists(videoId);
+		if (!exists) {
+			setIsUrlValid(false);
+			setValidationMessage(
+				'This YouTube video is unavailable or private'
+			);
+			return;
+		}
+
+		setIsUrlValid(true);
+		setValidationMessage('Valid YouTube URL! Ready to separate audio.');
+	};
+
+	const handleYoutubeUrlChange = (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		const newUrl = event.target.value;
+		setYoutubeUrl(newUrl);
+
+		if (newUrl) {
+			setIsValidating(true);
+			setValidationMessage('');
+			setVideoMetadata(null);
+
+			const timer = setTimeout(async () => {
+				await validateYoutubeUrl(newUrl);
+				setIsValidating(false);
+			}, 500);
+
+			return () => clearTimeout(timer);
+		} else {
+			setIsUrlValid(false);
+			setIsValidating(false);
+			setValidationMessage('');
+			setVideoMetadata(null);
+		}
+	};
 
 	// Handle YouTube separation
 	const handleSeparateYoutube = (url: string) => {
@@ -218,6 +325,12 @@ function App() {
 							separationResponse={separationResponse}
 							separateYoutubeMutation={separateYoutubeMutation}
 							handleSeparateYoutube={handleSeparateYoutube}
+							youtubeUrl={youtubeUrl}
+							isUrlValid={isUrlValid}
+							isValidating={isValidating}
+							validationMessage={validationMessage}
+							videoMetadata={videoMetadata}
+							handleUrlChange={handleYoutubeUrlChange}
 						/>
 					)}
 
