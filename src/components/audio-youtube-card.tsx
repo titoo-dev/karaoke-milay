@@ -13,14 +13,7 @@ import {
 import type { SeparationResponse } from '@/data/api';
 import { useState } from 'react';
 
-interface VideoMetadata {
-	title: string;
-	author_name: string;
-	duration?: number;
-	width: number;
-	height: number;
-	thumbnail_url: string;
-}
+import type { VideoMetadata } from '@/types/video';
 
 interface AudioYoutubeCardProps {
 	separateYoutubeMutation: any;
