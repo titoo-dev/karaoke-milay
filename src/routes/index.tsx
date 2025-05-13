@@ -18,21 +18,7 @@ import { AudioYoutubeCard } from '@/components/audio-youtube-card';
 import { Tabs } from '@/components/tabs';
 
 import { type VideoMetadata } from '@/types/video';
-
-// YouTube URL validator
-const isValidYoutubeUrl = (url: string): boolean => {
-	const regExp =
-		/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
-	return regExp.test(url);
-};
-
-// Extract video ID from YouTube URL
-const extractVideoId = (url: string): string | null => {
-	const regExp =
-		/^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:\S+)?$/;
-	const match = url.match(regExp);
-	return match ? match[1] : null;
-};
+import { isValidYoutubeUrl, extractVideoId } from '@/lib/utils';
 
 export const Route = createFileRoute('/')({
 	component: App,
