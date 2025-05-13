@@ -69,6 +69,24 @@ export function TrackPlayer({
 		}
 	};
 
+	const handleTimeScroll = (e: React.WheelEvent) => {
+		if (audioRef.current) {
+			const delta = e.deltaY > 0 ? -1 : 1;
+			const newTime = Math.min(
+				Math.max(currentTime + delta, 0),
+				duration
+			);
+			handleTimeChange([newTime]);
+		}
+	};
+
+	const handleVolumeScroll = (e: React.WheelEvent) => {
+		e.preventDefault();
+		const delta = e.deltaY > 0 ? -0.05 : 0.05;
+		const newVolume = Math.min(Math.max(volume + delta, 0), 1);
+		handleVolumeChange([newVolume]);
+	};
+
 	const handleWaveBarClick = (index: number) => {
 		if (audioRef.current && duration) {
 			const newTime = (index / waveBars.length) * duration;
@@ -166,14 +184,16 @@ export function TrackPlayer({
 					{formatTime(currentTime)}
 				</span>
 
-				<Slider
-					value={[currentTime]}
-					min={0}
-					max={duration || 100}
-					step={0.1}
-					onValueChange={handleTimeChange}
-					className="flex-1 hover:cursor-pointer"
-				/>
+				<div onWheel={handleTimeScroll} className="flex-1">
+					<Slider
+						value={[currentTime]}
+						min={0}
+						max={duration || 100}
+						step={0.1}
+						onValueChange={handleTimeChange}
+						className="hover:cursor-pointer"
+					/>
+				</div>
 
 				<span className="w-10 text-xs text-muted-foreground">
 					{formatTime(duration)}
@@ -192,14 +212,16 @@ export function TrackPlayer({
 					)}
 				</Button>
 
-				<Slider
-					value={[isMuted ? 0 : volume]}
-					min={0}
-					max={1}
-					step={0.01}
-					onValueChange={handleVolumeChange}
-					className="w-20"
-				/>
+				<div onWheel={handleVolumeScroll}>
+					<Slider
+						value={[isMuted ? 0 : volume]}
+						min={0}
+						max={1}
+						step={0.01}
+						onValueChange={handleVolumeChange}
+						className="w-20"
+					/>
+				</div>
 			</div>
 		</div>
 	);
