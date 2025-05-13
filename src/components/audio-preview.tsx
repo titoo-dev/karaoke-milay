@@ -1,11 +1,16 @@
+import { Music } from 'lucide-react';
+import { TrackPlayer } from './track-player';
+
 export function AudioPreview({ audioUrl }: { audioUrl: string }) {
 	return (
-		<div>
-			<label className="mb-2 block text-sm font-medium">Preview</label>
-			<audio
+		<div className="flex flex-col space-y-2">
+			<label className="text-sm font-medium">Preview</label>
+			<TrackPlayer
+				title="Audio Preview"
+				icon={Music}
+				iconColor="text-primary"
 				src={audioUrl}
-				controls
-				className="w-full rounded-md border"
+				showDownload={false}
 			/>
 		</div>
 	);

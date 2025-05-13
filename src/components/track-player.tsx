@@ -10,11 +10,13 @@ export function TrackPlayer({
 	icon: Icon,
 	iconColor,
 	src,
+	showDownload = true, // Added prop with default value
 }: {
 	title: string;
 	icon: React.ComponentType<any>;
 	iconColor: string;
 	src: string;
+	showDownload?: boolean; // Added optional prop
 }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const [isPlaying, setIsPlaying] = useState(false);
@@ -96,15 +98,17 @@ export function TrackPlayer({
 					<Icon className={`h-5 w-5 ${iconColor}`} />
 					{title}
 				</h3>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="h-8 w-8 rounded-full"
-					onClick={() => downloadAudioFile(src)}
-					title="Download track"
-				>
-					<Download className="h-4 w-4" />
-				</Button>
+				{showDownload && ( // Added conditional rendering
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-8 w-8 rounded-full"
+						onClick={() => downloadAudioFile(src)}
+						title="Download track"
+					>
+						<Download className="h-4 w-4" />
+					</Button>
+				)}
 			</div>
 
 			<audio ref={audioRef} src={src} className="hidden" />
