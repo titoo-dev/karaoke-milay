@@ -68,7 +68,7 @@ export function AudioYoutubeCard({
 		<Card>
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
-					<Youtube className="h-5 w-5 text-red-500" />
+					<Youtube className="h-5 w-5 text-primary" />
 					YouTube Audio
 				</CardTitle>
 				<CardDescription>
@@ -222,26 +222,27 @@ export function AudioYoutubeCard({
 					</div>
 				)}
 
-				<Button
-					variant="default"
-					disabled={
-						!isUrlValid ||
-						isValidating ||
-						separateYoutubeMutation.isPending ||
-						separationResponse
-					}
-					onClick={handleSeparate}
-					className="w-full"
-				>
-					{separateYoutubeMutation.isPending ? (
-						<>
-							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							Processing YouTube Audio...
-						</>
-					) : (
-						<>Separate Audio</>
-					)}
-				</Button>
+				<div className="flex justify-end">
+					<Button
+						variant="default"
+						disabled={
+							!isUrlValid ||
+							isValidating ||
+							separateYoutubeMutation.isPending ||
+							separationResponse
+						}
+						onClick={handleSeparate}
+					>
+						{separateYoutubeMutation.isPending ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Processing YouTube Audio...
+							</>
+						) : (
+							<>Separate Audio</>
+						)}
+					</Button>
+				</div>
 			</CardContent>
 		</Card>
 	);
