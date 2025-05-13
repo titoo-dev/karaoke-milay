@@ -151,6 +151,7 @@ export function TrackPlayer({
 	showDownload = true,
 }: TrackPlayerProps) {
 	const audioRef = useRef<HTMLAudioElement>(null);
+	const playerRef = useRef<HTMLDivElement>(null);
 	const [waveBars] = useState(() =>
 		Array.from({ length: 50 }, () => Math.random() * 0.8 + 0.2)
 	);
@@ -187,6 +188,26 @@ export function TrackPlayer({
 			});
 		};
 	}, []);
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Only handle space if this player has focus or one of its children has focus
+			if (
+				e.code === 'Space' &&
+				playerRef.current &&
+				(playerRef.current.contains(document.activeElement) ||
+					document.activeElement === document.body)
+			) {
+				e.preventDefault(); // Prevent page scrolling
+				handlePlayPause();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [audioState.isPlaying]);
 
 	const handlePlayPause = () => {
 		if (audioRef.current) {
@@ -230,7 +251,11 @@ export function TrackPlayer({
 	};
 
 	return (
-		<div className="rounded-lg border bg-card p-5">
+		<div
+			className="rounded-lg border bg-card p-5"
+			ref={playerRef}
+			tabIndex={0} // Make the component focusable for keyboard events
+		>
 			<div className="mb-4 flex items-center justify-between">
 				<h3 className="flex items-center gap-2 font-semibold">
 					<Icon className={`h-5 w-5 ${iconColor}`} />
