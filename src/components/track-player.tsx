@@ -156,9 +156,15 @@ export function TrackPlayer({
 	iconColor,
 	src,
 	showDownload = true,
-	showWaveform = true, // New prop
-}: TrackPlayerProps & { showWaveform?: boolean }) {
-	const audioRef = useRef<HTMLAudioElement>(null);
+	showWaveform = true,
+	onTimeUpdate,
+	audioRef: externalAudioRef,
+}: TrackPlayerProps & {
+	showWaveform?: boolean;
+	onTimeUpdate?: (time: number) => void;
+	audioRef?: React.RefObject<HTMLAudioElement>;
+}) {
+	const internalAudioRef = useRef<HTMLAudioElement>(null);
 	const playerRef = useRef<HTMLDivElement>(null);
 	const [waveBars] = useState(() =>
 		Array.from({ length: 50 }, () => Math.random() * 0.8 + 0.2)
@@ -172,18 +178,25 @@ export function TrackPlayer({
 		isMuted: false,
 	});
 
+	// Use the external ref if provided, otherwise use internal ref
+	const audioRefToUse = externalAudioRef || internalAudioRef;
+
 	useEffect(() => {
-		const audio = audioRef.current;
+		const audio = audioRefToUse.current;
 		if (!audio) return;
 
 		const handlers = {
 			loadedmetadata: () =>
 				setAudioState((s) => ({ ...s, duration: audio.duration })),
-			timeupdate: () =>
+			timeupdate: () => {
 				setAudioState((s) => ({
 					...s,
 					currentTime: audio.currentTime,
-				})),
+				}));
+				if (onTimeUpdate) {
+					onTimeUpdate(audio.currentTime);
+				}
+			},
 			ended: () => setAudioState((s) => ({ ...s, isPlaying: false })),
 		};
 
@@ -196,7 +209,7 @@ export function TrackPlayer({
 				audio?.removeEventListener(event, handler);
 			});
 		};
-	}, []);
+	}, [audioRefToUse, onTimeUpdate]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -218,11 +231,11 @@ export function TrackPlayer({
 	}, [audioState.isPlaying]);
 
 	const handlePlayPause = () => {
-		if (audioRef.current) {
+		if (audioRefToUse.current) {
 			if (audioState.isPlaying) {
-				audioRef.current.pause();
+				audioRefToUse.current.pause();
 			} else {
-				audioRef.current.play();
+				audioRefToUse.current.play();
 			}
 			setAudioState((s) => ({ ...s, isPlaying: !s.isPlaying }));
 		}
@@ -230,29 +243,32 @@ export function TrackPlayer({
 
 	const handleTimeChange = (value: number[]) => {
 		const newTime = value[0];
-		if (audioRef.current) {
-			audioRef.current.currentTime = newTime;
+		if (audioRefToUse.current) {
+			audioRefToUse.current.currentTime = newTime;
 			setAudioState((s) => ({ ...s, currentTime: newTime }));
+			if (onTimeUpdate) {
+				onTimeUpdate(newTime);
+			}
 		}
 	};
 
 	const handleVolumeChange = (value: number[]) => {
 		const newVolume = value[0];
-		if (audioRef.current) {
-			audioRef.current.volume = newVolume;
+		if (audioRefToUse.current) {
+			audioRefToUse.current.volume = newVolume;
 			setAudioState((s) => ({ ...s, volume: newVolume }));
 		}
 	};
 
 	const handleMuteToggle = () => {
-		if (audioRef.current) {
-			audioRef.current.muted = !audioState.isMuted;
+		if (audioRefToUse.current) {
+			audioRefToUse.current.muted = !audioState.isMuted;
 			setAudioState((s) => ({ ...s, isMuted: !s.isMuted }));
 		}
 	};
 
 	const handleWaveBarClick = (index: number) => {
-		if (audioRef.current && audioState.duration) {
+		if (audioRefToUse.current && audioState.duration) {
 			const newTime = (index / waveBars.length) * audioState.duration;
 			handleTimeChange([newTime]);
 		}
@@ -303,7 +319,7 @@ export function TrackPlayer({
 				</div>
 			</div>
 
-			<audio ref={audioRef} src={src} className="hidden" />
+			<audio ref={audioRefToUse} src={src} className="hidden" />
 
 			{showWaveform && isWaveformVisible && (
 				<Waveform
