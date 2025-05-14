@@ -1,4 +1,6 @@
-export function Footer() {
+import { memo } from 'react';
+
+export const Footer = memo(() => {
 	return (
 		<footer className="border-t py-6">
 			<div className="container flex mx-auto max-w-sm flex-col items-center justify-around gap-4 md:flex-row">
@@ -17,4 +19,4 @@ export function Footer() {
 			</div>
 		</footer>
 	);
-}
+});
