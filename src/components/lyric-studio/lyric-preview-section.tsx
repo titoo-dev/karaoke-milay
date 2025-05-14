@@ -14,8 +14,8 @@ export function LyricPreviewSection({
 }) {
 	return (
 		<Card className="pt-0 shadow-none overflow-hidden">
-			<CardHeader className="flex flex-row items-center py-6 border-b">
-				<CardTitle className="flex items-center gap-2">
+			<CardHeader className="flex flex-row items-center border-b pt-6">
+				<CardTitle className="flex items-center gap-2 py-3">
 					<Eye className="h-5 w-5 text-primary" />
 					Lyrics Preview
 				</CardTitle>
