@@ -27,3 +27,20 @@ export const extractVideoId = (url: string): string | null => {
 	const match = url.match(regExp);
 	return match ? match[1] : null;
 };
+
+// Utility functions
+export const formatTimestamp = (seconds: number): string => {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
+	return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
+		.toFixed(2)
+		.padStart(5, '0')}`;
+};
+
+export const formatLRCTimestamp = (seconds: number): string => {
+	const minutes = Math.floor(seconds / 60);
+	const remainingSeconds = seconds % 60;
+	return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
+		.toFixed(2)
+		.padStart(5, '0')}`;
+};
