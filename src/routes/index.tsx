@@ -194,6 +194,11 @@ function App() {
 		setAudioUrl(null);
 		setUploadedFileName(null);
 		setSeparationResponse(null);
+		setYoutubeUrl('');
+		setIsUrlValid(false);
+		setIsValidating(false);
+		setValidationMessage('');
+		setVideoMetadata(null);
 	};
 
 	// Handle tab change with separation pending check
