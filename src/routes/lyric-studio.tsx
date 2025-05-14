@@ -17,7 +17,7 @@ function LyricStudioPage() {
 	const [lyricLines, setLyricLines] = useState<LyricLine[]>([
 		{
 			id: 1,
-			text: 'Tonga aho anoroka ny takolakao',
+			text: 'Mikitikitiky milela-molotra',
 			timestamp: 0,
 		},
 	]);
