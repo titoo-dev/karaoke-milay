@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
 import {
 	// Import the API functions
 	uploadAudioFile,
@@ -12,8 +11,6 @@ import {
 } from '@/data/api';
 import { AudioUploadCard } from '@/components/audio-upload-card';
 import { OutputTracksCard } from '@/components/output-tracks-card';
-import { Footer } from '@/components/footer';
-import { Header } from '@/components/header';
 import { AudioYoutubeCard } from '@/components/audio-youtube-card';
 import { Tabs } from '@/components/tabs';
 
@@ -209,56 +206,49 @@ function App() {
 	};
 
 	return (
-		<div className="flex min-h-screen flex-col bg-gradient-to-b from-background to-background/90">
-			<Header />
+		<div className="flex-1 py-10">
+			<Tabs
+				activeTab={activeTab}
+				onTabChange={handleTabChange}
+				isDisabled={
+					separateMutation.isPending ||
+					separateYoutubeMutation.isPending
+				}
+			/>
 
-			<main className="container mx-auto flex-1 py-10">
-				<Tabs
-					activeTab={activeTab}
-					onTabChange={handleTabChange}
-					isDisabled={
-						separateMutation.isPending ||
-						separateYoutubeMutation.isPending
-					}
-				/>
-
-				<div className="grid gap-8 md:grid-cols-2">
-					{activeTab === 'upload' ? (
-						<AudioUploadCard
-							file={file}
-							audioUrl={audioUrl}
-							uploadedFileName={uploadedFileName}
-							uploadMutation={uploadMutation}
-							separateMutation={separateMutation}
-							handleFileChange={handleFileChange}
-							handleUpload={handleUpload}
-							handleSeparate={handleSeparate}
-						/>
-					) : (
-						<AudioYoutubeCard
-							separationResponse={separationResponse}
-							separateYoutubeMutation={separateYoutubeMutation}
-							handleSeparateYoutube={handleSeparateYoutube}
-							youtubeUrl={youtubeUrl}
-							isUrlValid={isUrlValid}
-							isValidating={isValidating}
-							validationMessage={validationMessage}
-							videoMetadata={videoMetadata}
-							handleUrlChange={handleYoutubeUrlChange}
-						/>
-					)}
-
-					<OutputTracksCard
-						separationResponse={separationResponse}
+			<div className="grid gap-8 md:grid-cols-2">
+				{activeTab === 'upload' ? (
+					<AudioUploadCard
+						file={file}
+						audioUrl={audioUrl}
+						uploadedFileName={uploadedFileName}
+						uploadMutation={uploadMutation}
 						separateMutation={separateMutation}
-						separateYoutubeMutation={separateYoutubeMutation}
-						resetState={resetState}
+						handleFileChange={handleFileChange}
+						handleUpload={handleUpload}
+						handleSeparate={handleSeparate}
 					/>
-				</div>
-			</main>
+				) : (
+					<AudioYoutubeCard
+						separationResponse={separationResponse}
+						separateYoutubeMutation={separateYoutubeMutation}
+						handleSeparateYoutube={handleSeparateYoutube}
+						youtubeUrl={youtubeUrl}
+						isUrlValid={isUrlValid}
+						isValidating={isValidating}
+						validationMessage={validationMessage}
+						videoMetadata={videoMetadata}
+						handleUrlChange={handleYoutubeUrlChange}
+					/>
+				)}
 
-			<Footer />
-			<Toaster />
+				<OutputTracksCard
+					separationResponse={separationResponse}
+					separateMutation={separateMutation}
+					separateYoutubeMutation={separateYoutubeMutation}
+					resetState={resetState}
+				/>
+			</div>
 		</div>
 	);
 }

@@ -11,9 +11,16 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as LyricStudioImport } from './routes/lyric-studio'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const LyricStudioRoute = LyricStudioImport.update({
+  id: '/lyric-studio',
+  path: '/lyric-studio',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -32,6 +39,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/lyric-studio': {
+      id: '/lyric-studio'
+      path: '/lyric-studio'
+      fullPath: '/lyric-studio'
+      preLoaderRoute: typeof LyricStudioImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +53,37 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/lyric-studio': typeof LyricStudioRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/lyric-studio': typeof LyricStudioRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/lyric-studio': typeof LyricStudioRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/lyric-studio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/lyric-studio'
+  id: '__root__' | '/' | '/lyric-studio'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LyricStudioRoute: typeof LyricStudioRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LyricStudioRoute: LyricStudioRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/lyric-studio"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/lyric-studio": {
+      "filePath": "lyric-studio.tsx"
     }
   }
 }

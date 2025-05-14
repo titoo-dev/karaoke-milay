@@ -1,7 +1,14 @@
 import { downloadAudioFile } from '@/data/api';
 import { Button } from './ui/button';
 import { useRef, useState, useEffect } from 'react';
-import { Download, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import {
+	Download,
+	Play,
+	Pause,
+	Volume2,
+	VolumeX,
+	AudioLines,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Slider } from './ui/slider';
 
@@ -149,12 +156,14 @@ export function TrackPlayer({
 	iconColor,
 	src,
 	showDownload = true,
-}: TrackPlayerProps) {
+	showWaveform = true, // New prop
+}: TrackPlayerProps & { showWaveform?: boolean }) {
 	const audioRef = useRef<HTMLAudioElement>(null);
 	const playerRef = useRef<HTMLDivElement>(null);
 	const [waveBars] = useState(() =>
 		Array.from({ length: 50 }, () => Math.random() * 0.8 + 0.2)
 	);
+	const [isWaveformVisible, setIsWaveformVisible] = useState(showWaveform);
 	const [audioState, setAudioState] = useState<AudioPlayerState>({
 		isPlaying: false,
 		duration: 0,
@@ -191,14 +200,13 @@ export function TrackPlayer({
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Only handle space if this player has focus or one of its children has focus
 			if (
 				e.code === 'Space' &&
 				playerRef.current &&
 				(playerRef.current.contains(document.activeElement) ||
 					document.activeElement === document.body)
 			) {
-				e.preventDefault(); // Prevent page scrolling
+				e.preventDefault();
 				handlePlayPause();
 			}
 		};
@@ -250,39 +258,62 @@ export function TrackPlayer({
 		}
 	};
 
+	const toggleWaveform = () => {
+		setIsWaveformVisible(!isWaveformVisible);
+	};
+
 	return (
 		<div
 			className="rounded-lg border bg-card p-5"
 			ref={playerRef}
-			tabIndex={0} // Make the component focusable for keyboard events
+			tabIndex={0}
 		>
 			<div className="mb-4 flex items-center justify-between">
 				<h3 className="flex items-center gap-2 font-semibold">
 					<Icon className={`h-5 w-5 ${iconColor}`} />
 					{title}
 				</h3>
-				{showDownload && (
-					<Button
-						variant="ghost"
-						size="icon"
-						className="h-8 w-8 rounded-full"
-						onClick={() => downloadAudioFile(src)}
-						title="Download track"
-					>
-						<Download className="h-4 w-4" />
-					</Button>
-				)}
+				<div className="flex items-center gap-2">
+					{showWaveform && (
+						<Button
+							variant={isWaveformVisible ? 'default' : 'ghost'}
+							size="icon"
+							className="h-8 w-8 rounded-full"
+							onClick={toggleWaveform}
+							title={
+								isWaveformVisible
+									? 'Hide waveform'
+									: 'Show waveform'
+							}
+						>
+							<AudioLines className="h-4 w-4" />
+						</Button>
+					)}
+					{showDownload && (
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8 rounded-full"
+							onClick={() => downloadAudioFile(src)}
+							title="Download track"
+						>
+							<Download className="h-4 w-4" />
+						</Button>
+					)}
+				</div>
 			</div>
 
 			<audio ref={audioRef} src={src} className="hidden" />
 
-			<Waveform
-				bars={waveBars}
-				currentTime={audioState.currentTime}
-				duration={audioState.duration}
-				isPlaying={audioState.isPlaying}
-				onBarClick={handleWaveBarClick}
-			/>
+			{showWaveform && isWaveformVisible && (
+				<Waveform
+					bars={waveBars}
+					currentTime={audioState.currentTime}
+					duration={audioState.duration}
+					isPlaying={audioState.isPlaying}
+					onBarClick={handleWaveBarClick}
+				/>
+			)}
 
 			<Controls
 				audioState={audioState}
