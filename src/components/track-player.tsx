@@ -1,24 +1,9 @@
 import { downloadAudioFile } from '@/data/api';
 import { Button } from './ui/button';
 import { useRef, useState, useEffect } from 'react';
-import {
-	Download,
-	Play,
-	Pause,
-	Volume2,
-	VolumeX,
-	AudioLines,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Slider } from './ui/slider';
-
-type AudioPlayerState = {
-	isPlaying: boolean;
-	duration: number;
-	currentTime: number;
-	volume: number;
-	isMuted: boolean;
-};
+import { Download, AudioLines } from 'lucide-react';
+import { Controls, type AudioPlayerState } from './track-player/controls';
+import { Waveform } from './track-player/wave-form';
 
 type TrackPlayerProps = {
 	title: string;
@@ -26,128 +11,6 @@ type TrackPlayerProps = {
 	iconColor: string;
 	src: string;
 	showDownload?: boolean;
-};
-
-type WaveformProps = {
-	bars: number[];
-	currentTime: number;
-	duration: number;
-	isPlaying: boolean;
-	onBarClick: (index: number) => void;
-};
-
-type ControlsProps = {
-	audioState: AudioPlayerState;
-	onPlayPause: () => void;
-	onTimeChange: (value: number[]) => void;
-	onVolumeChange: (value: number[]) => void;
-	onMuteToggle: () => void;
-};
-
-const Waveform = ({
-	bars,
-	currentTime,
-	duration,
-	isPlaying,
-	onBarClick,
-}: WaveformProps) => (
-	<div className="mb-4 flex h-16 items-center gap-0.5">
-		{bars.map((height, index) => (
-			<div
-				key={index}
-				className={cn(
-					'h-full w-full transition-all duration-300 hover:opacity-70 cursor-pointer',
-					index < bars.length * (currentTime / duration || 0)
-						? 'bg-primary'
-						: 'bg-muted'
-				)}
-				style={{
-					height: `${height * 100}%`,
-					opacity:
-						isPlaying &&
-						index ===
-							Math.floor(
-								bars.length * (currentTime / duration || 0)
-							)
-							? '0.8'
-							: undefined,
-				}}
-				onClick={() => onBarClick(index)}
-			/>
-		))}
-	</div>
-);
-
-const Controls = ({
-	audioState,
-	onPlayPause,
-	onTimeChange,
-	onVolumeChange,
-	onMuteToggle,
-}: ControlsProps) => {
-	const formatTime = (time: number) => {
-		const minutes = Math.floor(time / 60);
-		const seconds = Math.floor(time % 60);
-		return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-	};
-
-	return (
-		<div className="mb-3 flex items-center gap-2">
-			<Button
-				variant="outline"
-				size="icon"
-				className="h-9 w-9 rounded-full"
-				onClick={onPlayPause}
-			>
-				{audioState.isPlaying ? (
-					<Pause className="h-4 w-4" />
-				) : (
-					<Play className="h-4 w-4" />
-				)}
-			</Button>
-
-			<span className="w-10 text-xs text-muted-foreground">
-				{formatTime(audioState.currentTime)}
-			</span>
-
-			<div className="flex-1">
-				<Slider
-					value={[audioState.currentTime]}
-					min={0}
-					max={audioState.duration || 100}
-					step={0.1}
-					onValueChange={onTimeChange}
-					className="hover:cursor-pointer"
-				/>
-			</div>
-
-			<span className="w-10 text-xs text-muted-foreground">
-				{formatTime(audioState.duration)}
-			</span>
-
-			<Button
-				variant="ghost"
-				size="icon"
-				className="h-8 w-8"
-				onClick={onMuteToggle}
-			>
-				{audioState.isMuted ? (
-					<VolumeX className="h-4 w-4" />
-				) : (
-					<Volume2 className="h-4 w-4" />
-				)}
-			</Button>
-
-			<Slider
-				value={[audioState.isMuted ? 0 : audioState.volume]}
-				min={0}
-				max={1}
-				step={0.01}
-				onValueChange={onVolumeChange}
-				className="w-20"
-			/>
-		</div>
-	);
 };
 
 export function TrackPlayer({
