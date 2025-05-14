@@ -287,6 +287,8 @@ function LyricStudioPage() {
 					)}
 				</div>
 			</div>
+			{/* Spacer for fixed player */}
+			<div className="h-58"></div>
 
 			{/* Floating track player with integrated timestamp */}
 			<div className="fixed bottom-6 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 transform">
