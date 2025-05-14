@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { TrackPlayer } from '@/components/track-player';
-import { Download, Music, PlusCircle, Trash2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { LyricsPreviewCard } from '@/components/lyrics-preview-card';
+import { Download, Eye, Music, PlusCircle, Trash2 } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
 import { getOutputPath } from '@/data/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -179,6 +180,7 @@ function LyricLineItem({
 						}
 						className="w-full bg-transparent border-none text-base focus:outline-none focus:ring-0 placeholder:text-muted-foreground/60 shadow-none focus-visible:ring-0"
 						placeholder="Enter lyrics..."
+						autoComplete="off"
 					/>
 				</div>
 
@@ -237,7 +239,22 @@ function LyricStudioPage() {
 			timestamp: 0,
 		},
 	]);
+	const [showPreview, setShowPreview] = useState(false);
+	const [currentTime, setCurrentTime] = useState(0);
 	const audioRef = useRef<HTMLAudioElement>(null!);
+
+	// Update current time when audio plays
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		const updateTime = () => setCurrentTime(audio.currentTime);
+		audio.addEventListener('timeupdate', updateTime);
+
+		return () => {
+			audio.removeEventListener('timeupdate', updateTime);
+		};
+	}, []);
 
 	// Check if setting a timestamp at index would violate ascending sequence
 	const isValidTimestampPosition = (
@@ -396,32 +413,48 @@ function LyricStudioPage() {
 			</div>
 
 			{/* Main content area */}
-			<div className="grid gap-6">
+			<div
+				className="grid gap-6"
+				style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}
+			>
 				<Card className="pt-0 shadow-none">
 					<CardHeader className="flex flex-row items-center justify-between py-8 border-b">
 						<CardTitle className="flex items-center gap-2">
 							<Music className="h-5 w-5 text-primary" />
 							Lyric Editor
 						</CardTitle>
-						<Button
-							onClick={generateLRC}
-							disabled={
-								hasEmptyLyricLines() || lyricLines.length === 0
-							}
-							variant={
-								hasEmptyLyricLines() || lyricLines.length === 0
-									? 'outline'
-									: 'default'
-							}
-							title={
-								hasEmptyLyricLines()
-									? 'Fill in all lyric lines before downloading'
-									: 'Download lyrics in LRC format'
-							}
-						>
-							<Download className="mr-2 h-4 w-4" />
-							Download
-						</Button>
+						<div className="flex items-center gap-3">
+							<Button
+								onClick={() => setShowPreview(!showPreview)}
+								variant="outline"
+								className="gap-2"
+								title="Toggle lyrics preview"
+							>
+								<Eye className="h-4 w-4" />
+								{showPreview ? 'Hide Preview' : 'Preview'}
+							</Button>
+							<Button
+								onClick={generateLRC}
+								disabled={
+									hasEmptyLyricLines() ||
+									lyricLines.length === 0
+								}
+								variant={
+									hasEmptyLyricLines() ||
+									lyricLines.length === 0
+										? 'outline'
+										: 'default'
+								}
+								title={
+									hasEmptyLyricLines()
+										? 'Fill in all lyric lines before downloading'
+										: 'Download lyrics in LRC format'
+								}
+							>
+								<Download className="mr-2 h-4 w-4" />
+								Download
+							</Button>
+						</div>
 					</CardHeader>
 
 					<CardContent className="p-6">
@@ -451,27 +484,36 @@ function LyricStudioPage() {
 								<div className="flex justify-center mt-6">
 									<Button
 										onClick={() => addLyricLine()}
-										disabled={hasEmptyLyricLines()}
 										variant="outline"
-										className={`gap-2 ${
-											hasEmptyLyricLines()
-												? 'border-muted bg-muted/50 text-muted-foreground cursor-not-allowed'
-												: 'border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'
-										}`}
-										title={
-											hasEmptyLyricLines()
-												? 'Fill in all lyric lines before adding a new one'
-												: 'Add a new lyric line'
-										}
+										className="gap-2"
 									>
-										<PlusCircle className="h-4 w-4" /> Add
-										New Line
+										<PlusCircle className="h-4 w-4" />
+										Add Line
 									</Button>
 								</div>
 							</div>
 						)}
 					</CardContent>
 				</Card>
+
+				{/* Lyrics preview section now side by side on larger screens */}
+				{showPreview && (
+					<Card className="pt-0 shadow-none overflow-hidden">
+						<CardHeader className="flex flex-row items-center py-6 border-b">
+							<CardTitle className="flex items-center gap-2">
+								<Eye className="h-5 w-5 text-primary" />
+								Lyrics Preview
+							</CardTitle>
+						</CardHeader>
+						<CardContent className="p-0">
+							<LyricsPreviewCard
+								lyrics={lyricLines}
+								currentTime={currentTime}
+								onLyricClick={jumpToLyricLine}
+							/>
+						</CardContent>
+					</Card>
+				)}
 			</div>
 
 			{/* Spacer for fixed player */}
@@ -484,7 +526,7 @@ function LyricStudioPage() {
 					icon={Music}
 					iconColor="text-blue-500"
 					src={getOutputPath(
-						'output/htdemucs/audio-1747214945-146323308/no_vocals.mp3'
+						'output/htdemucs/audio-1747225513-864065854/no_vocals.mp3'
 					)}
 					showDownload={false}
 					audioRef={audioRef}

@@ -1,0 +1,106 @@
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/lib/utils';
+
+interface LyricLine {
+	id: number;
+	text: string;
+	timestamp: number;
+}
+
+interface LyricsPreviewCardProps {
+	lyrics: LyricLine[];
+	currentTime: number;
+	onLyricClick?: (id: number) => void;
+}
+
+export function LyricsPreviewCard({
+	lyrics,
+	currentTime,
+	onLyricClick,
+}: LyricsPreviewCardProps) {
+	const [activeLyricId, setActiveLyricId] = useState<number | null>(null);
+
+	// Find the active lyric based on current time
+	useEffect(() => {
+		if (!lyrics.length) return;
+
+		// Sort lyrics by timestamp
+		const sortedLyrics = [...lyrics].sort(
+			(a, b) => a.timestamp - b.timestamp
+		);
+
+		// Find the last lyric whose timestamp is less than or equal to current time
+		let activeIndex = -1;
+		for (let i = 0; i < sortedLyrics.length; i++) {
+			if (sortedLyrics[i].timestamp <= currentTime) {
+				activeIndex = i;
+			} else {
+				break;
+			}
+		}
+
+		setActiveLyricId(
+			activeIndex >= 0 ? sortedLyrics[activeIndex].id : null
+		);
+	}, [lyrics, currentTime]);
+
+	// If no lyrics, show a placeholder
+	if (!lyrics.length) {
+		return (
+			<div className="flex items-center justify-center h-60 text-muted-foreground">
+				No lyrics to preview
+			</div>
+		);
+	}
+
+	// Sort lyrics by timestamp for display
+	const sortedLyrics = [...lyrics].sort((a, b) => a.timestamp - b.timestamp);
+
+	return (
+		<div className="lyrics-preview-container bg-background/50 backdrop-blur-sm p-6 h-[300px] overflow-hidden relative">
+			<div className="lyrics-preview-gradient" />
+
+			<div className="flex flex-col items-center justify-center h-full relative">
+				<AnimatePresence>
+					{sortedLyrics.map((line) => {
+						const isActive = line.id === activeLyricId;
+
+						return (
+							<motion.div
+								key={line.id}
+								className={cn(
+									'cursor-pointer text-center py-2 px-4 my-1 transition-all duration-300 rounded-lg',
+									isActive
+										? 'lyrics-preview-active'
+										: 'opacity-60 hover:opacity-90'
+								)}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{
+									opacity: isActive ? 1 : 0.6,
+									y: 0,
+									scale: isActive ? 1.15 : 1,
+									transition: { duration: 0.3 },
+								}}
+								exit={{ opacity: 0, y: -20 }}
+								onClick={() => onLyricClick?.(line.id)}
+								style={{
+									position: 'relative',
+									zIndex: isActive ? 2 : 1,
+								}}
+							>
+								<span
+									className={cn(
+										isActive ? 'text-lg' : 'text-base'
+									)}
+								>
+									{line.text || '(Empty lyric)'}
+								</span>
+							</motion.div>
+						);
+					})}
+				</AnimatePresence>
+			</div>
+		</div>
+	);
+}
