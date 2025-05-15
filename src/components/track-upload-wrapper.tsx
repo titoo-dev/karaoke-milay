@@ -168,7 +168,7 @@ export function TrackUploadWrapper({
 			<Button
 				size="icon"
 				variant="ghost"
-				className="absolute -right-2 -top-2 z-10 h-8 w-8 rounded-full bg-background shadow-md"
+				className="absolute -right-8 -top-4 z-10 h-8 w-8 rounded-full bg-background shadow-md hover:cursor-pointer text-muted-foreground hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
 				onClick={() => setShowConfirmDialog(true)}
 				title="Remove audio"
 			>

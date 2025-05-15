@@ -3,6 +3,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { TimestampControl } from './timestamp-control';
+import { memo } from 'react';
 
 export interface LyricLine {
 	id: number;
@@ -34,7 +35,7 @@ export function LyricLineItem({
 			<div className="flex items-center gap-3 p-3">
 				<Badge
 					variant="outline"
-					className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold text-sm shrink-0"
+					className="w-8 h-8 flex items-center justify-center rounded-full text-primary font-semibold text-sm shrink-0"
 				>
 					{index + 1}
 				</Badge>
@@ -61,17 +62,34 @@ export function LyricLineItem({
 						onSetCurrentTime={onSetCurrentTime}
 					/>
 
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => onDeleteLine(line.id)}
-						className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
-						title="Delete line"
-					>
-						<Trash2 className="h-4 w-4" />
-					</Button>
+					<RemoveLyricLineButton
+						lineId={line.id}
+						onDeleteLine={onDeleteLine}
+					/>
 				</div>
 			</div>
 		</div>
 	);
 }
+
+const RemoveLyricLineButton = memo(
+	({
+		lineId,
+		onDeleteLine,
+	}: {
+		lineId: number;
+		onDeleteLine: (id: number) => void;
+	}) => {
+		return (
+			<Button
+				variant="ghost"
+				size="icon"
+				onClick={() => onDeleteLine(lineId)}
+				className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-destructive"
+				title="Delete line"
+			>
+				<Trash2 className="h-4 w-4" />
+			</Button>
+		);
+	}
+);
