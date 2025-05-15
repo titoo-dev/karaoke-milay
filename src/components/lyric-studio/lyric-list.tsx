@@ -4,7 +4,6 @@ import { LyricLineItem, type LyricLine } from './lyric-line-item';
 
 export function LyricList({
 	lyricLines,
-	canUseCurrentTime,
 	onUpdateLine,
 	onDeleteLine,
 	onJumpToLine,
@@ -12,7 +11,6 @@ export function LyricList({
 	onAddLine,
 }: {
 	lyricLines: LyricLine[];
-	canUseCurrentTime: (index: number) => boolean;
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
 	onJumpToLine: (id: number) => void;
@@ -27,11 +25,11 @@ export function LyricList({
 						key={line.id}
 						line={line}
 						index={index}
-						canUseCurrentTime={canUseCurrentTime(index)}
 						onUpdateLine={onUpdateLine}
 						onDeleteLine={onDeleteLine}
 						onJumpToLine={onJumpToLine}
 						onSetCurrentTime={onSetCurrentTime}
+						canUseCurrentTime
 					/>
 				))}
 			</div>

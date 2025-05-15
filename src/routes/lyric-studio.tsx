@@ -119,12 +119,6 @@ function LyricStudioPage() {
 		}
 	};
 
-	// Check if current audio time can be used as timestamp for a specific line
-	const canUseCurrentTime = (index: number): boolean => {
-		console.log('Current line:', index);
-		return true;
-	};
-
 	// Check if all lyric lines have text
 	const hasEmptyLyricLines = (): boolean => {
 		return lyricLines.some((line) => line.text.trim() === '');
@@ -203,7 +197,6 @@ function LyricStudioPage() {
 					setShowPreview={setShowPreview}
 					generateLRC={generateLRC}
 					hasEmptyLyricLines={hasEmptyLyricLines}
-					canUseCurrentTime={canUseCurrentTime}
 					onUpdateLine={updateLyricLine}
 					onDeleteLine={deleteLyricLine}
 					onJumpToLine={jumpToLyricLine}

@@ -10,7 +10,6 @@ export function LyricEditor({
 	setShowPreview,
 	generateLRC,
 	hasEmptyLyricLines,
-	canUseCurrentTime,
 	onUpdateLine,
 	onDeleteLine,
 	onJumpToLine,
@@ -24,7 +23,6 @@ export function LyricEditor({
 	setShowPreview: (show: boolean) => void;
 	generateLRC: () => LRCData;
 	hasEmptyLyricLines: () => boolean;
-	canUseCurrentTime: (index: number) => boolean;
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
 	onJumpToLine: (id: number) => void;
@@ -53,7 +51,6 @@ export function LyricEditor({
 				) : (
 					<LyricList
 						lyricLines={lyricLines}
-						canUseCurrentTime={canUseCurrentTime}
 						onUpdateLine={onUpdateLine}
 						onDeleteLine={onDeleteLine}
 						onJumpToLine={onJumpToLine}
