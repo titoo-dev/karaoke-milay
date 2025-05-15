@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { TrackPlayer } from '@/components/track-player';
-import { Music } from 'lucide-react';
+import { TrackUploadWrapper } from '@/components/track-upload-wrapper';
 import { useRef, useState, useEffect } from 'react';
-import { getOutputPath } from '@/data/api';
 import { type LyricLine } from '@/components/lyric-studio/lyric-line-item';
 import { formatLRCTimestamp } from '@/lib/utils';
 import type { LRCData } from '@/components/lyric-studio/lyric-header';
@@ -14,16 +12,18 @@ export const Route = createFileRoute('/lyric-studio')({
 });
 
 function LyricStudioPage() {
-	const [lyricLines, setLyricLines] = useState<LyricLine[]>([
-		{
-			id: 1,
-			text: 'Mikitikitiky milela-molotra',
-			timestamp: 0,
-		},
-	]);
+	const [lyricLines, setLyricLines] = useState<LyricLine[]>([]);
 	const [showPreview, setShowPreview] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
+	const [trackLoaded, setTrackLoaded] = useState(false);
 	const audioRef = useRef<HTMLAudioElement>(null!);
+
+	// Track when audio loaded or removed to reinitialize time tracking
+	useEffect(() => {
+		if (trackLoaded) {
+			setCurrentTime(0); // Reset time when new track is loaded
+		}
+	}, [trackLoaded]);
 
 	// Update current time when audio plays
 	useEffect(() => {
@@ -36,7 +36,7 @@ function LyricStudioPage() {
 		return () => {
 			audio.removeEventListener('timeupdate', updateTime);
 		};
-	}, []);
+	}, [trackLoaded]); // Re-run effect when audio track changes
 
 	// Check if setting a timestamp at index would violate ascending sequence
 	const isValidTimestampPosition = (
@@ -190,7 +190,9 @@ function LyricStudioPage() {
 					Lyric Studio
 				</h1>
 				<p className="text-muted-foreground">
-					Create and edit lyrics for your tracks
+					{trackLoaded
+						? 'Create and edit lyrics for your track'
+						: 'Upload an audio track to get started'}
 				</p>
 			</div>
 
@@ -228,15 +230,12 @@ function LyricStudioPage() {
 
 			{/* Floating track player with integrated timestamp */}
 			<div className="fixed bottom-6 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 transform">
-				<TrackPlayer
-					title="Current Track"
-					icon={Music}
+				<TrackUploadWrapper
 					iconColor="text-blue-500"
-					src={getOutputPath(
-						'output/htdemucs/audio-1747225513-864065854/no_vocals.mp3'
-					)}
 					showDownload={false}
 					audioRef={audioRef}
+					onAudioLoad={() => setTrackLoaded(true)}
+					onAudioRemove={() => setTrackLoaded(false)}
 				/>
 			</div>
 		</main>

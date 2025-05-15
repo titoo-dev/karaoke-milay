@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,8 @@ export function LyricsPreviewCard({
 	onLyricClick,
 }: LyricsPreviewCardProps) {
 	const [activeLyricId, setActiveLyricId] = useState<number | null>(null);
+	const containerRef = useRef<HTMLDivElement>(null);
+	const activeLineRef = useRef<HTMLDivElement>(null);
 
 	// Find the active lyric based on current time
 	useEffect(() => {
@@ -45,6 +47,16 @@ export function LyricsPreviewCard({
 		);
 	}, [lyrics, currentTime]);
 
+	// Scroll to active lyric
+	useEffect(() => {
+		if (activeLyricId && activeLineRef.current && containerRef.current) {
+			activeLineRef.current.scrollIntoView({
+				behavior: 'smooth',
+				block: 'center',
+			});
+		}
+	}, [activeLyricId]);
+
 	// If no lyrics, show a placeholder
 	if (!lyrics.length) {
 		return (
@@ -58,7 +70,7 @@ export function LyricsPreviewCard({
 	const sortedLyrics = [...lyrics].sort((a, b) => a.timestamp - b.timestamp);
 
 	return (
-		<div className="lyrics-preview-container bg-background/50 backdrop-blur-sm p-6 h-[300px] overflow-hidden relative">
+		<div className="lyrics-preview-container bg-background/50 backdrop-blur-sm p-6 overflow-hidden relative">
 			<div className="lyrics-preview-gradient" />
 
 			<div className="flex flex-col items-center justify-center h-full relative">
@@ -69,6 +81,7 @@ export function LyricsPreviewCard({
 						return (
 							<motion.div
 								key={line.id}
+								ref={isActive ? activeLineRef : undefined}
 								className={cn(
 									'cursor-pointer text-center py-2 px-4 my-1 transition-all duration-300 rounded-lg',
 									isActive
