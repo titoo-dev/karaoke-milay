@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { TrackUploadWrapper } from '@/components/track-upload-wrapper';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, memo } from 'react';
 import { type LyricLine } from '@/components/lyric-studio/lyric-line-item';
 import { formatLRCTimestamp } from '@/lib/utils';
 import type { LRCData } from '@/components/lyric-studio/lyric-header';
@@ -172,16 +172,7 @@ function LyricStudioPage() {
 
 	return (
 		<main className="container relative min-h-screen py-6">
-			<div className="mb-6">
-				<h1 className="text-3xl font-bold tracking-tight">
-					Lyric Studio
-				</h1>
-				<p className="text-muted-foreground">
-					{trackLoaded
-						? 'Create and edit lyrics for your track'
-						: 'Upload an audio track to get started'}
-				</p>
-			</div>
+			<LyricStudioHeader trackLoaded={trackLoaded} />
 
 			{/* Main content area */}
 			<div
@@ -239,3 +230,22 @@ function LyricStudioPage() {
 		</main>
 	);
 }
+
+interface LyricStudioHeaderProps {
+	trackLoaded: boolean;
+}
+
+const LyricStudioHeader = memo(({ trackLoaded }: LyricStudioHeaderProps) => {
+	return (
+		<div className="mb-6 space-y-2">
+			<h1 className="text-3xl font-bold tracking-tight leading-relaxed">
+				Lyric Studio
+			</h1>
+			<p className="text-muted-foreground leading-relaxed">
+				{trackLoaded
+					? 'Create and edit lyrics for your track'
+					: 'Upload an audio track to get started'}
+			</p>
+		</div>
+	);
+});
