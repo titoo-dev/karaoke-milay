@@ -3,6 +3,16 @@ import { Music, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TrackPlayer } from './track-player';
 import { Button } from './ui/button';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from './ui/alert-dialog';
 
 interface TrackUploadWrapperProps {
 	audioRef: React.RefObject<HTMLAudioElement>;
@@ -22,6 +32,7 @@ export function TrackUploadWrapper({
 	const [audioFile, setAudioFile] = useState<File | null>(null);
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
+	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// Clean up object URL on unmount
@@ -157,8 +168,8 @@ export function TrackUploadWrapper({
 			<Button
 				size="icon"
 				variant="ghost"
-				className="absolute -right-2 -top-2 z-10 h-8 w-8 rounded-full bg-background shadow-md hover:bg-destructive hover:text-destructive-foreground"
-				onClick={handleRemoveAudio}
+				className="absolute -right-2 -top-2 z-10 h-8 w-8 rounded-full bg-background shadow-md"
+				onClick={() => setShowConfirmDialog(true)}
 				title="Remove audio"
 			>
 				<X className="h-4 w-4" />
@@ -171,6 +182,26 @@ export function TrackUploadWrapper({
 				showDownload={showDownload}
 				audioRef={audioRef}
 			/>
+
+			<AlertDialog
+				open={showConfirmDialog}
+				onOpenChange={setShowConfirmDialog}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Remove track?</AlertDialogTitle>
+						<AlertDialogDescription>
+							This action will remove the current audio track.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction onClick={handleRemoveAudio}>
+							Remove
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
