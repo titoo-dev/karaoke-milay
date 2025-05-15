@@ -36,7 +36,7 @@ export function LyricList({
 				))}
 			</div>
 
-			<div className="flex justify-center mt-6">
+			<div className="flex justify-center mt-6 gap-3">
 				<Button onClick={onAddLine} variant="outline" className="gap-2">
 					<PlusCircle className="h-4 w-4" />
 					Add Line

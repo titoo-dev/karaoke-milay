@@ -6,6 +6,7 @@ import { formatLRCTimestamp } from '@/lib/utils';
 import type { LRCData } from '@/components/lyric-studio/lyric-header';
 import { LyricEditor } from '@/components/lyric-studio/lyric-editor';
 import { LyricPreviewSection } from '@/components/lyric-studio/lyric-preview-section';
+import { ExternalLyricsSection } from '@/components/lyric-studio/external-lyrics-section';
 
 export const Route = createFileRoute('/lyric-studio')({
 	component: LyricStudioPage,
@@ -14,6 +15,7 @@ export const Route = createFileRoute('/lyric-studio')({
 function LyricStudioPage() {
 	const [lyricLines, setLyricLines] = useState<LyricLine[]>([]);
 	const [showPreview, setShowPreview] = useState(false);
+	const [showExternalLyrics, setShowExternalLyrics] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [trackLoaded, setTrackLoaded] = useState(false);
 	const audioRef = useRef<HTMLAudioElement>(null!);
@@ -37,26 +39,6 @@ function LyricStudioPage() {
 			audio.removeEventListener('timeupdate', updateTime);
 		};
 	}, [trackLoaded]); // Re-run effect when audio track changes
-
-	// Check if setting a timestamp at index would violate ascending sequence
-	const isValidTimestampPosition = (
-		index: number,
-		timestamp: number
-	): boolean => {
-		const prevLine = index > 0 ? lyricLines[index - 1] : null;
-		const nextLine =
-			index < lyricLines.length - 1 ? lyricLines[index + 1] : null;
-
-		if (prevLine && timestamp < prevLine.timestamp) return false;
-		if (nextLine && timestamp > nextLine.timestamp) return false;
-
-		return true;
-	};
-
-	// Find index of line by id
-	const getLineIndexById = (id: number): number => {
-		return lyricLines.findIndex((line) => line.id === id);
-	};
 
 	// Jump to timestamp of specific lyric line
 	const jumpToLyricLine = (id: number) => {
@@ -118,14 +100,6 @@ function LyricStudioPage() {
 	};
 
 	const updateLyricLine = (id: number, data: Partial<LyricLine>) => {
-		// If updating timestamp, validate it follows ascending sequence
-		if ('timestamp' in data) {
-			const index = getLineIndexById(id);
-			if (!isValidTimestampPosition(index, data.timestamp as number)) {
-				return; // Don't update if it violates the sequence
-			}
-		}
-
 		setLyricLines(
 			lyricLines.map((line) =>
 				line.id === id ? { ...line, ...data } : line
@@ -139,20 +113,16 @@ function LyricStudioPage() {
 
 	const setCurrentTimeAsTimestamp = (id: number) => {
 		if (audioRef.current) {
-			const index = getLineIndexById(id);
 			const newTimestamp = audioRef.current.currentTime;
 
-			// Only update if it maintains ascending sequence
-			if (isValidTimestampPosition(index, newTimestamp)) {
-				updateLyricLine(id, { timestamp: newTimestamp });
-			}
+			updateLyricLine(id, { timestamp: newTimestamp });
 		}
 	};
 
 	// Check if current audio time can be used as timestamp for a specific line
 	const canUseCurrentTime = (index: number): boolean => {
-		if (!audioRef.current) return false;
-		return isValidTimestampPosition(index, audioRef.current.currentTime);
+		console.log('Current line:', index);
+		return true;
 	};
 
 	// Check if all lyric lines have text
@@ -183,6 +153,29 @@ function LyricStudioPage() {
 		return lrcData;
 	};
 
+	// Function to add multiple lines from external lyrics
+	const addLinesFromExternal = (externalLines: string[]) => {
+		if (externalLines.length === 0) return;
+
+		// Get current timestamp as starting point
+		const currentTimestamp = audioRef.current?.currentTime || 0;
+
+		// Create a new lyric line for each external line with incremental timestamps
+		const newLines = externalLines.map((text, index) => {
+			const newId =
+				Math.max(0, ...lyricLines.map((line) => line.id)) + index + 1;
+			// Add 2 seconds between each line
+			const timestamp = currentTimestamp + index * 2;
+			return {
+				id: newId,
+				text,
+				timestamp,
+			};
+		});
+
+		setLyricLines(newLines);
+	};
+
 	return (
 		<main className="container relative min-h-screen py-6">
 			<div className="mb-6">
@@ -199,7 +192,10 @@ function LyricStudioPage() {
 			{/* Main content area */}
 			<div
 				className="grid gap-6"
-				style={{ gridTemplateColumns: showPreview ? '1fr 1fr' : '1fr' }}
+				style={{
+					gridTemplateColumns:
+						showPreview || showExternalLyrics ? '1fr 1fr' : '1fr',
+				}}
 			>
 				<LyricEditor
 					lyricLines={lyricLines}
@@ -213,14 +209,23 @@ function LyricStudioPage() {
 					onJumpToLine={jumpToLyricLine}
 					onSetCurrentTime={setCurrentTimeAsTimestamp}
 					onAddLine={addLyricLine}
+					showExternalLyrics={showExternalLyrics}
+					setShowExternalLyrics={setShowExternalLyrics}
 				/>
 
-				{/* Lyrics preview section */}
-				{showPreview && (
+				{/* Lyrics preview or external lyrics section */}
+				{showPreview && !showExternalLyrics && (
 					<LyricPreviewSection
 						lyrics={lyricLines}
 						currentTime={currentTime}
 						onLyricClick={jumpToLyricLine}
+					/>
+				)}
+
+				{/* External lyrics input */}
+				{showExternalLyrics && (
+					<ExternalLyricsSection
+						onConvertToLines={addLinesFromExternal}
 					/>
 				)}
 			</div>

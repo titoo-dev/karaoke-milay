@@ -16,6 +16,8 @@ export function LyricEditor({
 	onJumpToLine,
 	onSetCurrentTime,
 	onAddLine,
+	showExternalLyrics,
+	setShowExternalLyrics,
 }: {
 	lyricLines: LyricLine[];
 	showPreview: boolean;
@@ -28,6 +30,8 @@ export function LyricEditor({
 	onJumpToLine: (id: number) => void;
 	onSetCurrentTime: (id: number) => void;
 	onAddLine: (afterId?: number) => void;
+	showExternalLyrics: boolean;
+	setShowExternalLyrics: (show: boolean) => void;
 }) {
 	return (
 		<Card className="pt-0 shadow-none">
@@ -37,6 +41,10 @@ export function LyricEditor({
 				generateLRC={generateLRC}
 				hasEmptyLyricLines={hasEmptyLyricLines}
 				lyricLines={lyricLines}
+				onShowExternalLyrics={() =>
+					setShowExternalLyrics(!showExternalLyrics)
+				}
+				showExternalLyrics={showExternalLyrics}
 			/>
 
 			<CardContent className="p-6">
