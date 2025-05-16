@@ -2,11 +2,10 @@ import { PlusCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { LyricLineItem } from './lyric-line-item';
 import { useLyricStudioStore } from '@/stores/lyric-studio/store';
-import { useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import { useAudioRef } from '@/hooks/use-audio-ref';
 
 export function LyricList() {
-	const audioRef = useRef<HTMLAudioElement | null>(null);
 	const {
 		lyricLines,
 		updateLyricLine,
@@ -24,6 +23,8 @@ export function LyricList() {
 			addLyricLine: state.addLyricLine,
 		}))
 	);
+
+	const audioRef = useAudioRef();
 
 	const handleJumpToLine = (id: number) => {
 		jumpToLyricLine(id, audioRef.current);

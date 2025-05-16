@@ -2,26 +2,19 @@ import { ArrowRightCircle, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { useState } from 'react';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
+import { useAudioRef } from '@/hooks/use-audio-ref';
 
-interface ExternalLyricsSectionProps {
-	onConvertToLines: (lines: string[]) => void;
-}
+export function ExternalLyricsSection() {
+	const {
+		showExternalLyrics,
+		externalLyrics,
+		setExternalLyrics,
+		addLinesFromExternal,
+	} = useLyricStudioStore();
+	const audioRef = useAudioRef();
 
-export function ExternalLyricsSection({
-	onConvertToLines,
-}: ExternalLyricsSectionProps) {
-	const [externalLyrics, setExternalLyrics] = useState<string>('');
-
-	const handleConvertToLines = () => {
-		// Split the text into lines and filter out empty lines
-		const lines = externalLyrics
-			.split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line.length > 0);
-
-		onConvertToLines(lines);
-	};
+	if (!showExternalLyrics) return null;
 
 	return (
 		<Card className="pt-0 shadow-none overflow-hidden">
@@ -31,7 +24,7 @@ export function ExternalLyricsSection({
 					External Lyrics
 				</CardTitle>
 				<Button
-					onClick={handleConvertToLines}
+					onClick={() => addLinesFromExternal(audioRef.current)}
 					variant="outline"
 					size="sm"
 					className="gap-2"

@@ -1,11 +1,14 @@
 import { Music, PlusCircle } from 'lucide-react';
 import { Button } from '../ui/button';
+import { memo } from 'react';
 
 interface EmptyLyricsProps {
 	onAddLine: () => void;
 }
 
-export function EmptyLyrics({ onAddLine }: EmptyLyricsProps) {
+export const EmptyLyrics = memo(function EmptyLyrics({
+	onAddLine,
+}: EmptyLyricsProps) {
 	return (
 		<div className="flex flex-col items-center justify-center p-12 text-center m-6 rounded-lg border border-dashed bg-muted/30 backdrop-blur-sm">
 			<div className="rounded-full bg-primary/10 p-4 mb-4">
@@ -20,4 +23,4 @@ export function EmptyLyrics({ onAddLine }: EmptyLyricsProps) {
 			</Button>
 		</div>
 	);
-}
+});

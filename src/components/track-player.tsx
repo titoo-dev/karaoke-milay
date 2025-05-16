@@ -6,22 +6,20 @@ import { useAudioRef } from '@/hooks/use-audio-ref';
 import { WaveFormToggleButton } from './track-player/wave-form-toggle-button';
 import { DownloadAudioFileButton } from './track-player/download-audio-file-button';
 import { useShallow } from 'zustand/react/shallow';
+import { useTrackUploadStore } from '@/stores/track-upload-wrapper/store';
 
 type TrackPlayerProps = {
-	title: string;
 	icon: React.ComponentType<any>;
 	iconColor: string;
-	src: string;
 	showDownload?: boolean;
 };
 
 export function TrackPlayer({
-	title,
 	icon: Icon,
 	iconColor,
-	src,
 	showDownload = true,
 }: TrackPlayerProps) {
+	const { audioFile, audioUrl } = useTrackUploadStore();
 	const playerRef = useRef<HTMLDivElement>(null);
 	const audioRef = useAudioRef();
 
@@ -59,6 +57,8 @@ export function TrackPlayer({
 		};
 	}, [playPause]);
 
+	if (!audioFile || !audioUrl) return null;
+
 	return (
 		<div
 			className="rounded-lg border bg-card p-5"
@@ -68,19 +68,19 @@ export function TrackPlayer({
 			<div className="mb-4 flex items-center justify-between">
 				<h3 className="flex items-center gap-2 font-semibold">
 					<Icon className={`h-5 w-5 ${iconColor}`} />
-					{title}
+					{audioFile.name}
 				</h3>
 				<div className="flex items-center gap-2">
 					<WaveFormToggleButton />
 
 					<DownloadAudioFileButton
-						src={src}
+						src={audioUrl}
 						showDownload={showDownload}
 					/>
 				</div>
 			</div>
 
-			<audio ref={audioRef} src={src} className="hidden" />
+			<audio ref={audioRef} src={audioUrl} className="hidden" />
 
 			<Waveform />
 

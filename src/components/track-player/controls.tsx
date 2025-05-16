@@ -3,6 +3,8 @@ import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { useTrackPlayerStore } from '@/stores/track-player/store';
 import { useShallow } from 'zustand/react/shallow';
+import { motion } from 'motion/react';
+import { useAudioRef } from '@/hooks/use-audio-ref';
 
 export type AudioPlayerState = {
 	isPlaying: boolean;
@@ -38,22 +40,8 @@ const PlayPauseButton = () => {
 };
 
 // Time Display component
-// Time Display component
-const TimeDisplay = ({
-	type = 'current',
-	className = '',
-}: {
-	type?: 'current' | 'duration';
-	className?: string;
-}) => {
-	const { currentTime, duration } = useTrackPlayerStore(
-		useShallow((state) => ({
-			currentTime: state.currentTime,
-			duration: state.duration,
-		}))
-	);
-
-	const time = type === 'current' ? currentTime : duration;
+const CurrentTimeDisplay = ({ className = '' }: { className?: string }) => {
+	const currentTime = useTrackPlayerStore((state) => state.currentTime);
 
 	const formatTime = (time: number) => {
 		const minutes = Math.floor(time / 60);
@@ -63,14 +51,32 @@ const TimeDisplay = ({
 
 	return (
 		<span className={`text-xs text-muted-foreground ${className}`}>
-			{formatTime(time)}
+			{formatTime(currentTime)}
+		</span>
+	);
+};
+
+const DurationTimeDisplay = ({ className = '' }: { className?: string }) => {
+	const duration = useTrackPlayerStore((state) => state.duration);
+
+	const formatTime = (time: number) => {
+		const minutes = Math.floor(time / 60);
+		const seconds = Math.floor(time % 60);
+		return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+	};
+
+	return (
+		<span className={`text-xs text-muted-foreground ${className}`}>
+			{formatTime(duration)}
 		</span>
 	);
 };
 
 // Progress Slider component
 const ProgressSlider = () => {
-	const { currentTime, duration, setTime } = useTrackPlayerStore(
+	const audioRef = useAudioRef();
+
+	const { currentTime, duration } = useTrackPlayerStore(
 		useShallow((state) => ({
 			currentTime: state.currentTime,
 			duration: state.duration,
@@ -78,15 +84,27 @@ const ProgressSlider = () => {
 		}))
 	);
 
+	const handlePositionChange = (value: number[]) => {
+		if (audioRef.current) {
+			audioRef.current.currentTime = value[0];
+		}
+	};
+
 	return (
-		<Slider
-			value={[currentTime]}
-			min={0}
-			max={duration || 100}
-			step={0.1}
-			onValueChange={(values) => setTime(values[0])}
-			className="hover:cursor-pointer"
-		/>
+		<motion.div
+			whileHover={{
+				scaleY: 2,
+				backfaceVisibility: 'hidden',
+			}}
+		>
+			<Slider
+				value={[currentTime]}
+				min={0}
+				max={duration || 100}
+				onValueChange={handlePositionChange}
+				className="w-full will-change-transform"
+			/>
+		</motion.div>
 	);
 };
 
@@ -142,13 +160,13 @@ export const Controls = () => {
 	return (
 		<div className="mb-3 flex items-center gap-2">
 			<PlayPauseButton />
-			<TimeDisplay className="w-10" />
+			<CurrentTimeDisplay className="w-10" />
 
 			<div className="flex-1">
 				<ProgressSlider />
 			</div>
 
-			<TimeDisplay className="w-10" />
+			<DurationTimeDisplay className="w-10" />
 			<VolumeButton />
 			<VolumeSlider />
 		</div>

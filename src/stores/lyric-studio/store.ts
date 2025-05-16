@@ -2,18 +2,19 @@ import { create } from 'zustand';
 import { formatLRCTimestamp } from '@/lib/utils';
 import type { LyricLine } from '@/components/lyric-studio/lyric-line-item';
 import type { LRCData } from '@/components/lyric-studio/lyric-editor-header';
-
 interface LyricStudioState {
 	lyricLines: LyricLine[];
 	showPreview: boolean;
 	showExternalLyrics: boolean;
 	trackLoaded: boolean;
+	externalLyrics: string;
 
 	// Actions
 	setLyricLines: (lines: LyricLine[]) => void;
 	setShowPreview: (show: boolean) => void;
 	setShowExternalLyrics: (show: boolean) => void;
 	setTrackLoaded: (loaded: boolean) => void;
+	setExternalLyrics: (lyrics: string) => void;
 
 	// Business logic
 	jumpToLyricLine: (
@@ -32,10 +33,8 @@ interface LyricStudioState {
 	) => void;
 	hasEmptyLyricLines: () => boolean;
 	generateLRC: () => LRCData;
-	addLinesFromExternal: (
-		externalLines: string[],
-		audioElement: HTMLAudioElement | null
-	) => void;
+	addLinesFromExternal: (audioElement: HTMLAudioElement | null) => void;
+	processExternalLyrics: () => string[];
 }
 
 export const useLyricStudioStore = create<LyricStudioState>((set, get) => ({
@@ -43,6 +42,7 @@ export const useLyricStudioStore = create<LyricStudioState>((set, get) => ({
 	showPreview: false,
 	showExternalLyrics: false,
 	trackLoaded: false,
+	externalLyrics: '',
 
 	// Actions
 	setLyricLines: (lines) => set({ lyricLines: lines }),
@@ -51,6 +51,7 @@ export const useLyricStudioStore = create<LyricStudioState>((set, get) => ({
 	setTrackLoaded: (loaded) => {
 		set({ trackLoaded: loaded });
 	},
+	setExternalLyrics: (lyrics) => set({ externalLyrics: lyrics }),
 
 	// Business logic
 	jumpToLyricLine: (id, audioElement) => {
@@ -164,7 +165,17 @@ export const useLyricStudioStore = create<LyricStudioState>((set, get) => ({
 		return lrcData;
 	},
 
-	addLinesFromExternal: (externalLines, audioElement) => {
+	processExternalLyrics: () => {
+		const { externalLyrics } = get();
+		// Split the text into lines and filter out empty lines
+		return externalLyrics
+			.split('\n')
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+	},
+
+	addLinesFromExternal: (audioElement) => {
+		const externalLines = get().processExternalLyrics();
 		if (externalLines.length === 0) return;
 
 		const { lyricLines } = get();

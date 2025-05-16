@@ -5,6 +5,7 @@ import { LyricEditorHeader } from './lyric-editor-header';
 import { LyricList } from './lyric-list';
 import { useLyricStudioStore } from '@/stores/lyric-studio/store';
 import { useShallow } from 'zustand/react/shallow';
+import { memo } from 'react';
 
 export function LyricEditor() {
 	return (
@@ -16,7 +17,7 @@ export function LyricEditor() {
 	);
 }
 
-const LyricEditorContent = () => {
+const LyricEditorContent = memo(() => {
 	const audioRef = useAudioRef();
 	const { lyricLines, addLyricLine } = useLyricStudioStore(
 		useShallow((state) => ({
@@ -34,4 +35,6 @@ const LyricEditorContent = () => {
 			)}
 		</CardContent>
 	);
-};
+});
+
+LyricEditorContent.displayName = 'LyricEditorContent';

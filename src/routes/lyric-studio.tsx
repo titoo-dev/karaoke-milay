@@ -4,8 +4,8 @@ import { LyricEditor } from '@/components/lyric-studio/lyric-editor';
 import { LyricPreviewSection } from '@/components/lyric-studio/lyric-preview-section';
 import { ExternalLyricsSection } from '@/components/lyric-studio/external-lyrics-section';
 import { useLyricStudioStore } from '@/stores/lyric-studio/store';
-import { useAudioRef } from '@/hooks/use-audio-ref';
 import { LyricStudioHeader } from '@/components/lyric-studio/lyrics-studio-header';
+import { useShallow } from 'zustand/react/shallow';
 
 export const Route = createFileRoute('/lyric-studio')({
 	component: LyricStudioPage,
@@ -34,31 +34,12 @@ function LyricStudioPage() {
 }
 
 const LyricsCardsWrapper = () => {
-	const audioRef = useAudioRef();
-	const { lyricLines, setLyricLines, showPreview, showExternalLyrics } =
-		useLyricStudioStore();
-
-	const addLinesFromExternal = (externalLines: string[]) => {
-		if (externalLines.length === 0) return;
-
-		// Get current timestamp as starting point
-		const currentTimestamp = audioRef.current?.currentTime || 0;
-
-		// Create a new lyric line for each external line with incremental timestamps
-		const newLines = externalLines.map((text, index) => {
-			const newId =
-				Math.max(0, ...lyricLines.map((line) => line.id)) + index + 1;
-			// Add 2 seconds between each line
-			const timestamp = currentTimestamp + index * 2;
-			return {
-				id: newId,
-				text,
-				timestamp,
-			};
-		});
-
-		setLyricLines(newLines);
-	};
+	const { showPreview, showExternalLyrics } = useLyricStudioStore(
+		useShallow((state) => ({
+			showPreview: state.showPreview,
+			showExternalLyrics: state.showExternalLyrics,
+		}))
+	);
 
 	return (
 		<div
@@ -70,15 +51,9 @@ const LyricsCardsWrapper = () => {
 		>
 			<LyricEditor />
 
-			{/* Lyrics preview or external lyrics section */}
-			{showPreview && !showExternalLyrics && <LyricPreviewSection />}
+			<LyricPreviewSection />
 
-			{/* External lyrics input */}
-			{showExternalLyrics && (
-				<ExternalLyricsSection
-					onConvertToLines={addLinesFromExternal}
-				/>
-			)}
+			<ExternalLyricsSection />
 		</div>
 	);
 };
