@@ -1,9 +1,11 @@
 import { downloadAudioFile } from '@/data/api';
 import { Button } from './ui/button';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { Download, AudioLines } from 'lucide-react';
-import { Controls, type AudioPlayerState } from './track-player/controls';
+import { Controls } from './track-player/controls';
 import { Waveform } from './track-player/wave-form';
+import { useTrackPlayerStore } from '@/stores/track-player/store';
+import { useAudioRef } from '@/hooks/use-audio-ref';
 
 type TrackPlayerProps = {
 	title: string;
@@ -19,61 +21,34 @@ export function TrackPlayer({
 	iconColor,
 	src,
 	showDownload = true,
-	showWaveform = true,
-	onTimeUpdate,
-	audioRef: externalAudioRef,
-}: TrackPlayerProps & {
-	showWaveform?: boolean;
-	onTimeUpdate?: (time: number) => void;
-	audioRef?: React.RefObject<HTMLAudioElement>;
-}) {
-	const internalAudioRef = useRef<HTMLAudioElement>(null);
+}: TrackPlayerProps) {
 	const playerRef = useRef<HTMLDivElement>(null);
-	const [waveBars] = useState(() =>
-		Array.from({ length: 50 }, () => Math.random() * 0.8 + 0.2)
-	);
-	const [isWaveformVisible, setIsWaveformVisible] = useState(showWaveform);
-	const [audioState, setAudioState] = useState<AudioPlayerState>({
-		isPlaying: false,
-		duration: 0,
-		currentTime: 0,
-		volume: 1,
-		isMuted: false,
-	});
+	const audioRef = useAudioRef();
 
-	// Use the external ref if provided, otherwise use internal ref
-	const audioRefToUse = externalAudioRef || internalAudioRef;
+	const {
+		isPlaying,
+		duration,
+		currentTime,
+		volume,
+		isMuted,
+		isWaveformVisible,
+		waveBars,
+		initializeAudio,
+		setTime,
+		playPause,
+		setVolume,
+		toggleMute,
+		toggleWaveform,
+	} = useTrackPlayerStore();
 
+	// Initialize audio when component mounts
 	useEffect(() => {
-		const audio = audioRefToUse.current;
-		if (!audio) return;
+		if (audioRef.current) {
+			initializeAudio(audioRef.current);
+		}
+	}, [initializeAudio]);
 
-		const handlers = {
-			loadedmetadata: () =>
-				setAudioState((s) => ({ ...s, duration: audio.duration })),
-			timeupdate: () => {
-				setAudioState((s) => ({
-					...s,
-					currentTime: audio.currentTime,
-				}));
-				if (onTimeUpdate) {
-					onTimeUpdate(audio.currentTime);
-				}
-			},
-			ended: () => setAudioState((s) => ({ ...s, isPlaying: false })),
-		};
-
-		Object.entries(handlers).forEach(([event, handler]) => {
-			audio.addEventListener(event, handler);
-		});
-
-		return () => {
-			Object.entries(handlers).forEach(([event, handler]) => {
-				audio?.removeEventListener(event, handler);
-			});
-		};
-	}, [audioRefToUse, onTimeUpdate]);
-
+	// Keyboard shortcuts
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (
@@ -83,7 +58,7 @@ export function TrackPlayer({
 					document.activeElement === document.body)
 			) {
 				e.preventDefault();
-				handlePlayPause();
+				playPause();
 			}
 		};
 
@@ -91,54 +66,21 @@ export function TrackPlayer({
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [audioState.isPlaying]);
-
-	const handlePlayPause = () => {
-		if (audioRefToUse.current) {
-			if (audioState.isPlaying) {
-				audioRefToUse.current.pause();
-			} else {
-				audioRefToUse.current.play();
-			}
-			setAudioState((s) => ({ ...s, isPlaying: !s.isPlaying }));
-		}
-	};
+	}, [playPause]);
 
 	const handleTimeChange = (value: number[]) => {
-		const newTime = value[0];
-		if (audioRefToUse.current) {
-			audioRefToUse.current.currentTime = newTime;
-			setAudioState((s) => ({ ...s, currentTime: newTime }));
-			if (onTimeUpdate) {
-				onTimeUpdate(newTime);
-			}
-		}
+		setTime(value[0]);
 	};
 
 	const handleVolumeChange = (value: number[]) => {
-		const newVolume = value[0];
-		if (audioRefToUse.current) {
-			audioRefToUse.current.volume = newVolume;
-			setAudioState((s) => ({ ...s, volume: newVolume }));
-		}
-	};
-
-	const handleMuteToggle = () => {
-		if (audioRefToUse.current) {
-			audioRefToUse.current.muted = !audioState.isMuted;
-			setAudioState((s) => ({ ...s, isMuted: !s.isMuted }));
-		}
+		setVolume(value[0]);
 	};
 
 	const handleWaveBarClick = (index: number) => {
-		if (audioRefToUse.current && audioState.duration) {
-			const newTime = (index / waveBars.length) * audioState.duration;
-			handleTimeChange([newTime]);
+		if (duration) {
+			const newTime = (index / waveBars.length) * duration;
+			setTime(newTime);
 		}
-	};
-
-	const toggleWaveform = () => {
-		setIsWaveformVisible(!isWaveformVisible);
 	};
 
 	return (
@@ -153,21 +95,19 @@ export function TrackPlayer({
 					{title}
 				</h3>
 				<div className="flex items-center gap-2">
-					{showWaveform && (
-						<Button
-							variant={isWaveformVisible ? 'default' : 'ghost'}
-							size="icon"
-							className="h-8 w-8 rounded-full"
-							onClick={toggleWaveform}
-							title={
-								isWaveformVisible
-									? 'Hide waveform'
-									: 'Show waveform'
-							}
-						>
-							<AudioLines className="h-4 w-4" />
-						</Button>
-					)}
+					<Button
+						variant={isWaveformVisible ? 'default' : 'ghost'}
+						size="icon"
+						className="h-8 w-8 rounded-full"
+						onClick={toggleWaveform}
+						title={
+							isWaveformVisible
+								? 'Hide waveform'
+								: 'Show waveform'
+						}
+					>
+						<AudioLines className="h-4 w-4" />
+					</Button>
 					{showDownload && (
 						<Button
 							variant="ghost"
@@ -182,24 +122,30 @@ export function TrackPlayer({
 				</div>
 			</div>
 
-			<audio ref={audioRefToUse} src={src} className="hidden" />
+			<audio ref={audioRef} src={src} className="hidden" />
 
-			{showWaveform && isWaveformVisible && (
+			{isWaveformVisible && (
 				<Waveform
 					bars={waveBars}
-					currentTime={audioState.currentTime}
-					duration={audioState.duration}
-					isPlaying={audioState.isPlaying}
+					currentTime={currentTime}
+					duration={duration}
+					isPlaying={isPlaying}
 					onBarClick={handleWaveBarClick}
 				/>
 			)}
 
 			<Controls
-				audioState={audioState}
-				onPlayPause={handlePlayPause}
+				audioState={{
+					isPlaying,
+					duration,
+					currentTime,
+					volume,
+					isMuted,
+				}}
+				onPlayPause={playPause}
 				onTimeChange={handleTimeChange}
 				onVolumeChange={handleVolumeChange}
-				onMuteToggle={handleMuteToggle}
+				onMuteToggle={toggleMute}
 			/>
 		</div>
 	);

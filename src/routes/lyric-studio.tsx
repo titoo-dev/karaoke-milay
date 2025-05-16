@@ -1,24 +1,30 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { TrackUploadWrapper } from '@/components/track-upload-wrapper';
-import { useRef, useState, useEffect, memo } from 'react';
-import { type LyricLine } from '@/components/lyric-studio/lyric-line-item';
-import { formatLRCTimestamp } from '@/lib/utils';
-import type { LRCData } from '@/components/lyric-studio/lyric-header';
+import { useEffect } from 'react';
 import { LyricEditor } from '@/components/lyric-studio/lyric-editor';
 import { LyricPreviewSection } from '@/components/lyric-studio/lyric-preview-section';
 import { ExternalLyricsSection } from '@/components/lyric-studio/external-lyrics-section';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
+import { useAudioRef } from '@/hooks/use-audio-ref';
+import { LyricStudioHeader } from '@/components/lyric-studio/lyrics-studio-header';
 
 export const Route = createFileRoute('/lyric-studio')({
 	component: LyricStudioPage,
 });
 
 function LyricStudioPage() {
-	const [lyricLines, setLyricLines] = useState<LyricLine[]>([]);
-	const [showPreview, setShowPreview] = useState(false);
-	const [showExternalLyrics, setShowExternalLyrics] = useState(false);
-	const [currentTime, setCurrentTime] = useState(0);
-	const [trackLoaded, setTrackLoaded] = useState(false);
-	const audioRef = useRef<HTMLAudioElement>(null!);
+	const {
+		lyricLines,
+		showPreview,
+		showExternalLyrics,
+		currentTime,
+		trackLoaded,
+		setLyricLines,
+		setCurrentTime,
+		setTrackLoaded,
+	} = useLyricStudioStore();
+
+	const audioRef = useAudioRef();
 
 	// Track when audio loaded or removed to reinitialize time tracking
 	useEffect(() => {
@@ -49,102 +55,6 @@ function LyricStudioPage() {
 				.play()
 				.catch((err) => console.error('Playback failed:', err));
 		}
-	};
-
-	const addLyricLine = (afterId?: number) => {
-		const newId = Math.max(0, ...lyricLines.map((line) => line.id)) + 1;
-		const currentTimestamp = audioRef.current?.currentTime || 0;
-
-		if (afterId) {
-			const index = lyricLines.findIndex((line) => line.id === afterId);
-			const newLines = [...lyricLines];
-
-			// Ensure the new timestamp follows ascending sequence
-			let newTimestamp = currentTimestamp;
-			const prevTimestamp = newLines[index].timestamp;
-			const nextTimestamp =
-				index < newLines.length - 1
-					? newLines[index + 1].timestamp
-					: Infinity;
-
-			// Make sure timestamp is between prev and next
-			if (newTimestamp <= prevTimestamp) {
-				newTimestamp = prevTimestamp + 0.5; // Add a small increment
-			}
-			if (nextTimestamp !== Infinity && newTimestamp >= nextTimestamp) {
-				newTimestamp = (prevTimestamp + nextTimestamp) / 2; // Use middle point
-			}
-
-			newLines.splice(index + 1, 0, {
-				id: newId,
-				text: '',
-				timestamp: newTimestamp,
-			});
-			setLyricLines(newLines);
-		} else {
-			// For adding at the end, make sure it's greater than the last timestamp
-			let newTimestamp = currentTimestamp;
-			if (lyricLines.length > 0) {
-				const lastTimestamp =
-					lyricLines[lyricLines.length - 1].timestamp;
-				if (newTimestamp <= lastTimestamp) {
-					newTimestamp = lastTimestamp + 0.5; // Add a small increment
-				}
-			}
-
-			setLyricLines([
-				...lyricLines,
-				{ id: newId, text: '', timestamp: newTimestamp },
-			]);
-		}
-	};
-
-	const updateLyricLine = (id: number, data: Partial<LyricLine>) => {
-		setLyricLines(
-			lyricLines.map((line) =>
-				line.id === id ? { ...line, ...data } : line
-			)
-		);
-	};
-
-	const deleteLyricLine = (id: number) => {
-		setLyricLines(lyricLines.filter((line) => line.id !== id));
-	};
-
-	const setCurrentTimeAsTimestamp = (id: number) => {
-		if (audioRef.current) {
-			const newTimestamp = audioRef.current.currentTime;
-
-			updateLyricLine(id, { timestamp: newTimestamp });
-		}
-	};
-
-	// Check if all lyric lines have text
-	const hasEmptyLyricLines = (): boolean => {
-		return lyricLines.some((line) => line.text.trim() === '');
-	};
-
-	// Generate LRC format and log it
-	const generateLRC = (): LRCData => {
-		// Sort lyrics by timestamp to ensure proper order
-		const sortedLyrics = [...lyricLines].sort(
-			(a, b) => a.timestamp - b.timestamp
-		);
-
-		const lrcData: LRCData = {
-			metadata: {
-				title: 'Untitled Song',
-				artist: 'Unknown Artist',
-				album: 'Unknown Album',
-				timestamps: sortedLyrics.map((line) => ({
-					time: formatLRCTimestamp(line.timestamp),
-					text: line.text,
-				})),
-			},
-		};
-
-		console.log('LRC Data (JSON format):', lrcData);
-		return lrcData;
 	};
 
 	// Function to add multiple lines from external lyrics
@@ -182,20 +92,7 @@ function LyricStudioPage() {
 						showPreview || showExternalLyrics ? '1fr 1fr' : '1fr',
 				}}
 			>
-				<LyricEditor
-					lyricLines={lyricLines}
-					showPreview={showPreview}
-					setShowPreview={setShowPreview}
-					generateLRC={generateLRC}
-					hasEmptyLyricLines={hasEmptyLyricLines}
-					onUpdateLine={updateLyricLine}
-					onDeleteLine={deleteLyricLine}
-					onJumpToLine={jumpToLyricLine}
-					onSetCurrentTime={setCurrentTimeAsTimestamp}
-					onAddLine={addLyricLine}
-					showExternalLyrics={showExternalLyrics}
-					setShowExternalLyrics={setShowExternalLyrics}
-				/>
+				<LyricEditor />
 
 				{/* Lyrics preview or external lyrics section */}
 				{showPreview && !showExternalLyrics && (
@@ -222,7 +119,6 @@ function LyricStudioPage() {
 				<TrackUploadWrapper
 					iconColor="text-blue-500"
 					showDownload={false}
-					audioRef={audioRef}
 					onAudioLoad={() => setTrackLoaded(true)}
 					onAudioRemove={() => setTrackLoaded(false)}
 				/>
@@ -230,22 +126,3 @@ function LyricStudioPage() {
 		</main>
 	);
 }
-
-interface LyricStudioHeaderProps {
-	trackLoaded: boolean;
-}
-
-const LyricStudioHeader = memo(({ trackLoaded }: LyricStudioHeaderProps) => {
-	return (
-		<div className="mb-6 space-y-2">
-			<h1 className="text-3xl font-bold tracking-tight leading-relaxed">
-				Lyric Studio
-			</h1>
-			<p className="text-muted-foreground leading-relaxed">
-				{trackLoaded
-					? 'Create and edit lyrics for your track'
-					: 'Upload an audio track to get started'}
-			</p>
-		</div>
-	);
-});

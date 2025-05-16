@@ -1,36 +1,27 @@
 import { Card, CardContent } from '../ui/card';
 import { EmptyLyrics } from './empty-lyrics';
-import { LyricHeader, type LRCData } from './lyric-header';
-import type { LyricLine } from './lyric-line-item';
+import { LyricHeader } from './lyric-header';
 import { LyricList } from './lyric-list';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
+import { useRef } from 'react';
 
-export function LyricEditor({
-	lyricLines,
-	showPreview,
-	setShowPreview,
-	generateLRC,
-	hasEmptyLyricLines,
-	onUpdateLine,
-	onDeleteLine,
-	onJumpToLine,
-	onSetCurrentTime,
-	onAddLine,
-	showExternalLyrics,
-	setShowExternalLyrics,
-}: {
-	lyricLines: LyricLine[];
-	showPreview: boolean;
-	setShowPreview: (show: boolean) => void;
-	generateLRC: () => LRCData;
-	hasEmptyLyricLines: () => boolean;
-	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
-	onDeleteLine: (id: number) => void;
-	onJumpToLine: (id: number) => void;
-	onSetCurrentTime: (id: number) => void;
-	onAddLine: (afterId?: number) => void;
-	showExternalLyrics: boolean;
-	setShowExternalLyrics: (show: boolean) => void;
-}) {
+export function LyricEditor() {
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const {
+		lyricLines,
+		showPreview,
+		showExternalLyrics,
+		setShowPreview,
+		setShowExternalLyrics,
+		updateLyricLine,
+		deleteLyricLine,
+		jumpToLyricLine,
+		setCurrentTimeAsTimestamp,
+		addLyricLine,
+		hasEmptyLyricLines,
+		generateLRC,
+	} = useLyricStudioStore();
+
 	return (
 		<Card className="pt-0 shadow-none">
 			<LyricHeader
@@ -47,15 +38,21 @@ export function LyricEditor({
 
 			<CardContent className="p-6">
 				{lyricLines.length === 0 ? (
-					<EmptyLyrics onAddLine={() => onAddLine()} />
+					<EmptyLyrics
+						onAddLine={() => addLyricLine(audioRef.current)}
+					/>
 				) : (
 					<LyricList
 						lyricLines={lyricLines}
-						onUpdateLine={onUpdateLine}
-						onDeleteLine={onDeleteLine}
-						onJumpToLine={onJumpToLine}
-						onSetCurrentTime={onSetCurrentTime}
-						onAddLine={() => onAddLine()}
+						onUpdateLine={updateLyricLine}
+						onDeleteLine={deleteLyricLine}
+						onJumpToLine={(id) =>
+							jumpToLyricLine(id, audioRef.current)
+						}
+						onSetCurrentTime={(id) =>
+							setCurrentTimeAsTimestamp(id, audioRef.current)
+						}
+						onAddLine={() => addLyricLine(audioRef.current)}
 					/>
 				)}
 			</CardContent>
