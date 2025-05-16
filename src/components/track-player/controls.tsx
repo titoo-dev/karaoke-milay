@@ -2,6 +2,7 @@ import { Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
 import { useTrackPlayerStore } from '@/stores/track-player/store';
+import { useShallow } from 'zustand/react/shallow';
 
 export type AudioPlayerState = {
 	isPlaying: boolean;
@@ -13,7 +14,12 @@ export type AudioPlayerState = {
 
 // Play/Pause Button component
 const PlayPauseButton = () => {
-	const { isPlaying, playPause } = useTrackPlayerStore();
+	const { isPlaying, playPause } = useTrackPlayerStore(
+		useShallow((state) => ({
+			isPlaying: state.isPlaying,
+			playPause: state.playPause,
+		}))
+	);
 
 	return (
 		<Button
@@ -40,7 +46,12 @@ const TimeDisplay = ({
 	type?: 'current' | 'duration';
 	className?: string;
 }) => {
-	const { currentTime, duration } = useTrackPlayerStore();
+	const { currentTime, duration } = useTrackPlayerStore(
+		useShallow((state) => ({
+			currentTime: state.currentTime,
+			duration: state.duration,
+		}))
+	);
 
 	const time = type === 'current' ? currentTime : duration;
 
@@ -58,9 +69,14 @@ const TimeDisplay = ({
 };
 
 // Progress Slider component
-// Progress Slider component
 const ProgressSlider = () => {
-	const { currentTime, duration, setTime } = useTrackPlayerStore();
+	const { currentTime, duration, setTime } = useTrackPlayerStore(
+		useShallow((state) => ({
+			currentTime: state.currentTime,
+			duration: state.duration,
+			setTime: state.setTime,
+		}))
+	);
 
 	return (
 		<Slider
@@ -75,9 +91,13 @@ const ProgressSlider = () => {
 };
 
 // Volume Button component
-// Volume Button component
 const VolumeButton = () => {
-	const { isMuted, toggleMute } = useTrackPlayerStore();
+	const { isMuted, toggleMute } = useTrackPlayerStore(
+		useShallow((state) => ({
+			isMuted: state.isMuted,
+			toggleMute: state.toggleMute,
+		}))
+	);
 
 	return (
 		<Button
@@ -96,9 +116,14 @@ const VolumeButton = () => {
 };
 
 // Volume Slider component
-// Volume Slider component
 const VolumeSlider = () => {
-	const { volume, isMuted, setVolume } = useTrackPlayerStore();
+	const { volume, isMuted, setVolume } = useTrackPlayerStore(
+		useShallow((state) => ({
+			volume: state.volume,
+			isMuted: state.isMuted,
+			setVolume: state.setVolume,
+		}))
+	);
 
 	return (
 		<Slider

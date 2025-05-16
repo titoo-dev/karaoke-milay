@@ -5,6 +5,7 @@ import { useTrackPlayerStore } from '@/stores/track-player/store';
 import { useAudioRef } from '@/hooks/use-audio-ref';
 import { WaveFormToggleButton } from './track-player/wave-form-toggle-button';
 import { DownloadAudioFileButton } from './track-player/download-audio-file-button';
+import { useShallow } from 'zustand/react/shallow';
 
 type TrackPlayerProps = {
 	title: string;
@@ -24,7 +25,12 @@ export function TrackPlayer({
 	const playerRef = useRef<HTMLDivElement>(null);
 	const audioRef = useAudioRef();
 
-	const { initializeAudio, playPause } = useTrackPlayerStore();
+	const { initializeAudio, playPause } = useTrackPlayerStore(
+		useShallow((state) => ({
+			initializeAudio: state.initializeAudio,
+			playPause: state.playPause,
+		}))
+	);
 
 	// Initialize audio when component mounts
 	useEffect(() => {
