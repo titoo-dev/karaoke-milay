@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { TrackUploadWrapper } from '@/components/track-upload-wrapper';
-import { useEffect } from 'react';
 import { LyricEditor } from '@/components/lyric-studio/lyric-editor';
 import { LyricPreviewSection } from '@/components/lyric-studio/lyric-preview-section';
 import { ExternalLyricsSection } from '@/components/lyric-studio/external-lyrics-section';
@@ -17,45 +16,14 @@ function LyricStudioPage() {
 		lyricLines,
 		showPreview,
 		showExternalLyrics,
-		currentTime,
 		trackLoaded,
 		setLyricLines,
-		setCurrentTime,
 		setTrackLoaded,
 	} = useLyricStudioStore();
 
 	const audioRef = useAudioRef();
 
-	// Track when audio loaded or removed to reinitialize time tracking
-	useEffect(() => {
-		if (trackLoaded) {
-			setCurrentTime(0); // Reset time when new track is loaded
-		}
-	}, [trackLoaded]);
-
-	// Update current time when audio plays
-	useEffect(() => {
-		const audio = audioRef.current;
-		if (!audio) return;
-
-		const updateTime = () => setCurrentTime(audio.currentTime);
-		audio.addEventListener('timeupdate', updateTime);
-
-		return () => {
-			audio.removeEventListener('timeupdate', updateTime);
-		};
-	}, [trackLoaded]); // Re-run effect when audio track changes
-
 	// Jump to timestamp of specific lyric line
-	const jumpToLyricLine = (id: number) => {
-		const line = lyricLines.find((line) => line.id === id);
-		if (line && audioRef.current) {
-			audioRef.current.currentTime = line.timestamp;
-			audioRef.current
-				.play()
-				.catch((err) => console.error('Playback failed:', err));
-		}
-	};
 
 	// Function to add multiple lines from external lyrics
 	const addLinesFromExternal = (externalLines: string[]) => {
@@ -95,13 +63,7 @@ function LyricStudioPage() {
 				<LyricEditor />
 
 				{/* Lyrics preview or external lyrics section */}
-				{showPreview && !showExternalLyrics && (
-					<LyricPreviewSection
-						lyrics={lyricLines}
-						currentTime={currentTime}
-						onLyricClick={jumpToLyricLine}
-					/>
-				)}
+				{showPreview && !showExternalLyrics && <LyricPreviewSection />}
 
 				{/* External lyrics input */}
 				{showExternalLyrics && (

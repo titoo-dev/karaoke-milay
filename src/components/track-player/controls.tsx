@@ -1,6 +1,7 @@
 import { Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Slider } from '../ui/slider';
+import { useTrackPlayerStore } from '@/stores/track-player/store';
 
 export type AudioPlayerState = {
 	isPlaying: boolean;
@@ -10,21 +11,39 @@ export type AudioPlayerState = {
 	isMuted: boolean;
 };
 
-type ControlsProps = {
-	audioState: AudioPlayerState;
-	onPlayPause: () => void;
-	onTimeChange: (value: number[]) => void;
-	onVolumeChange: (value: number[]) => void;
-	onMuteToggle: () => void;
+// Play/Pause Button component
+const PlayPauseButton = () => {
+	const { isPlaying, playPause } = useTrackPlayerStore();
+
+	return (
+		<Button
+			variant="outline"
+			size="icon"
+			className="h-9 w-9 rounded-full"
+			onClick={playPause}
+		>
+			{isPlaying ? (
+				<Pause className="h-4 w-4" />
+			) : (
+				<Play className="h-4 w-4" />
+			)}
+		</Button>
+	);
 };
 
-export const Controls = ({
-	audioState,
-	onPlayPause,
-	onTimeChange,
-	onVolumeChange,
-	onMuteToggle,
-}: ControlsProps) => {
+// Time Display component
+// Time Display component
+const TimeDisplay = ({
+	type = 'current',
+	className = '',
+}: {
+	type?: 'current' | 'duration';
+	className?: string;
+}) => {
+	const { currentTime, duration } = useTrackPlayerStore();
+
+	const time = type === 'current' ? currentTime : duration;
+
 	const formatTime = (time: number) => {
 		const minutes = Math.floor(time / 60);
 		const seconds = Math.floor(time % 60);
@@ -32,60 +51,81 @@ export const Controls = ({
 	};
 
 	return (
-		<div className="mb-3 flex items-center gap-2">
-			<Button
-				variant="outline"
-				size="icon"
-				className="h-9 w-9 rounded-full"
-				onClick={onPlayPause}
-			>
-				{audioState.isPlaying ? (
-					<Pause className="h-4 w-4" />
-				) : (
-					<Play className="h-4 w-4" />
-				)}
-			</Button>
+		<span className={`text-xs text-muted-foreground ${className}`}>
+			{formatTime(time)}
+		</span>
+	);
+};
 
-			<span className="w-10 text-xs text-muted-foreground">
-				{formatTime(audioState.currentTime)}
-			</span>
+// Progress Slider component
+// Progress Slider component
+const ProgressSlider = () => {
+	const { currentTime, duration, setTime } = useTrackPlayerStore();
+
+	return (
+		<Slider
+			value={[currentTime]}
+			min={0}
+			max={duration || 100}
+			step={0.1}
+			onValueChange={(values) => setTime(values[0])}
+			className="hover:cursor-pointer"
+		/>
+	);
+};
+
+// Volume Button component
+// Volume Button component
+const VolumeButton = () => {
+	const { isMuted, toggleMute } = useTrackPlayerStore();
+
+	return (
+		<Button
+			variant="ghost"
+			size="icon"
+			className="h-8 w-8"
+			onClick={toggleMute}
+		>
+			{isMuted ? (
+				<VolumeX className="h-4 w-4" />
+			) : (
+				<Volume2 className="h-4 w-4" />
+			)}
+		</Button>
+	);
+};
+
+// Volume Slider component
+// Volume Slider component
+const VolumeSlider = () => {
+	const { volume, isMuted, setVolume } = useTrackPlayerStore();
+
+	return (
+		<Slider
+			value={[isMuted ? 0 : volume]}
+			min={0}
+			max={1}
+			step={0.01}
+			onValueChange={(values) => setVolume(values[0])}
+			className="w-20"
+		/>
+	);
+};
+
+// Main Controls component
+export const Controls = () => {
+	return (
+		<div className="mb-3 flex items-center gap-2">
+			<PlayPauseButton />
+			<TimeDisplay className="w-10" />
 
 			<div className="flex-1">
-				<Slider
-					value={[audioState.currentTime]}
-					min={0}
-					max={audioState.duration || 100}
-					step={0.1}
-					onValueChange={onTimeChange}
-					className="hover:cursor-pointer"
-				/>
+				<ProgressSlider />
 			</div>
 
-			<span className="w-10 text-xs text-muted-foreground">
-				{formatTime(audioState.duration)}
-			</span>
-
-			<Button
-				variant="ghost"
-				size="icon"
-				className="h-8 w-8"
-				onClick={onMuteToggle}
-			>
-				{audioState.isMuted ? (
-					<VolumeX className="h-4 w-4" />
-				) : (
-					<Volume2 className="h-4 w-4" />
-				)}
-			</Button>
-
-			<Slider
-				value={[audioState.isMuted ? 0 : audioState.volume]}
-				min={0}
-				max={1}
-				step={0.01}
-				onValueChange={onVolumeChange}
-				className="w-20"
-			/>
+			<TimeDisplay className="w-10" />
+			<VolumeButton />
+			<VolumeSlider />
 		</div>
 	);
 };

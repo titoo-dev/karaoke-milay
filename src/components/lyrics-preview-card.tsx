@@ -1,34 +1,24 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
+import { useTrackPlayerStore } from '@/stores/track-player/store';
+import { useAudioRef } from '@/hooks/use-audio-ref';
 
-interface LyricLine {
-	id: number;
-	text: string;
-	timestamp: number;
-}
-
-interface LyricsPreviewCardProps {
-	lyrics: LyricLine[];
-	currentTime: number;
-	onLyricClick?: (id: number) => void;
-}
-
-export function LyricsPreviewCard({
-	lyrics,
-	currentTime,
-	onLyricClick,
-}: LyricsPreviewCardProps) {
+export function LyricsPreviewCard() {
+	const lyricLines = useLyricStudioStore((state) => state.lyricLines);
+	const currentTime = useTrackPlayerStore((state) => state.currentTime);
 	const [activeLyricId, setActiveLyricId] = useState<number | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const activeLineRef = useRef<HTMLDivElement>(null);
+	const audioRef = useAudioRef();
 
 	// Find the active lyric based on current time
 	useEffect(() => {
-		if (!lyrics.length) return;
+		if (!lyricLines.length) return;
 
-		// Sort lyrics by timestamp
-		const sortedLyrics = [...lyrics].sort(
+		// Sort lyricLines by timestamp
+		const sortedLyrics = [...lyricLines].sort(
 			(a, b) => a.timestamp - b.timestamp
 		);
 
@@ -45,7 +35,7 @@ export function LyricsPreviewCard({
 		setActiveLyricId(
 			activeIndex >= 0 ? sortedLyrics[activeIndex].id : null
 		);
-	}, [lyrics, currentTime]);
+	}, [lyricLines, currentTime]);
 
 	// Scroll to active lyric
 	useEffect(() => {
@@ -58,7 +48,7 @@ export function LyricsPreviewCard({
 	}, [activeLyricId]);
 
 	// If no lyrics, show a placeholder
-	if (!lyrics.length) {
+	if (!lyricLines.length) {
 		return (
 			<div className="flex items-center justify-center h-60 text-muted-foreground">
 				No lyrics to preview
@@ -66,8 +56,20 @@ export function LyricsPreviewCard({
 		);
 	}
 
-	// Sort lyrics by timestamp for display
-	const sortedLyrics = [...lyrics].sort((a, b) => a.timestamp - b.timestamp);
+	// Sort lyricLines by timestamp for display
+	const sortedLyrics = [...lyricLines].sort(
+		(a, b) => a.timestamp - b.timestamp
+	);
+
+	const jumpToLyricLine = (id: number) => {
+		const line = lyricLines.find((line) => line.id === id);
+		if (line && audioRef.current) {
+			audioRef.current.currentTime = line.timestamp;
+			audioRef.current
+				.play()
+				.catch((err) => console.error('Playback failed:', err));
+		}
+	};
 
 	return (
 		<div className="lyrics-preview-container bg-background/50 backdrop-blur-sm p-6 overflow-hidden relative">
@@ -96,7 +98,7 @@ export function LyricsPreviewCard({
 									transition: { duration: 0.3 },
 								}}
 								exit={{ opacity: 0, y: -20 }}
-								onClick={() => onLyricClick?.(line.id)}
+								onClick={() => jumpToLyricLine(line.id)}
 								style={{
 									position: 'relative',
 									zIndex: isActive ? 2 : 1,

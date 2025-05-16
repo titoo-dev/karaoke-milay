@@ -1,17 +1,8 @@
 import { Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import type { LyricLine } from './lyric-line-item';
 import { LyricsPreviewCard } from '../lyrics-preview-card';
 
-export function LyricPreviewSection({
-	lyrics,
-	currentTime,
-	onLyricClick,
-}: {
-	lyrics: LyricLine[];
-	currentTime: number;
-	onLyricClick: (id: number) => void;
-}) {
+export function LyricPreviewSection() {
 	return (
 		<Card className="pt-0 shadow-none overflow-hidden">
 			<CardHeader className="flex flex-row items-center border-b pt-6">
@@ -21,11 +12,7 @@ export function LyricPreviewSection({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="p-0">
-				<LyricsPreviewCard
-					lyrics={lyrics}
-					currentTime={currentTime}
-					onLyricClick={onLyricClick}
-				/>
+				<LyricsPreviewCard />
 			</CardContent>
 		</Card>
 	);

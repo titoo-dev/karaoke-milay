@@ -7,14 +7,12 @@ interface LyricStudioState {
 	lyricLines: LyricLine[];
 	showPreview: boolean;
 	showExternalLyrics: boolean;
-	currentTime: number;
 	trackLoaded: boolean;
 
 	// Actions
 	setLyricLines: (lines: LyricLine[]) => void;
 	setShowPreview: (show: boolean) => void;
 	setShowExternalLyrics: (show: boolean) => void;
-	setCurrentTime: (time: number) => void;
 	setTrackLoaded: (loaded: boolean) => void;
 
 	// Business logic
@@ -44,19 +42,14 @@ export const useLyricStudioStore = create<LyricStudioState>((set, get) => ({
 	lyricLines: [],
 	showPreview: false,
 	showExternalLyrics: false,
-	currentTime: 0,
 	trackLoaded: false,
 
 	// Actions
 	setLyricLines: (lines) => set({ lyricLines: lines }),
 	setShowPreview: (show) => set({ showPreview: show }),
 	setShowExternalLyrics: (show) => set({ showExternalLyrics: show }),
-	setCurrentTime: (time) => set({ currentTime: time }),
 	setTrackLoaded: (loaded) => {
 		set({ trackLoaded: loaded });
-		if (loaded) {
-			set({ currentTime: 0 }); // Reset time when new track is loaded
-		}
 	},
 
 	// Business logic
