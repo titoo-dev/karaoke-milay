@@ -12,20 +12,32 @@ export const Route = createFileRoute('/lyric-studio')({
 });
 
 function LyricStudioPage() {
-	const {
-		lyricLines,
-		showPreview,
-		showExternalLyrics,
-		trackLoaded,
-		setLyricLines,
-		setTrackLoaded,
-	} = useLyricStudioStore();
+	return (
+		<main className="container relative min-h-screen py-6">
+			<LyricStudioHeader />
 
+			{/* Main content area */}
+			<LyricsCardsWrapper />
+
+			{/* Spacer for fixed player */}
+			<div className="h-58"></div>
+
+			{/* Floating track player with integrated timestamp */}
+			<div className="fixed bottom-6 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 transform">
+				<TrackUploadWrapper
+					iconColor="text-blue-500"
+					showDownload={false}
+				/>
+			</div>
+		</main>
+	);
+}
+
+const LyricsCardsWrapper = () => {
 	const audioRef = useAudioRef();
+	const { lyricLines, setLyricLines, showPreview, showExternalLyrics } =
+		useLyricStudioStore();
 
-	// Jump to timestamp of specific lyric line
-
-	// Function to add multiple lines from external lyrics
 	const addLinesFromExternal = (externalLines: string[]) => {
 		if (externalLines.length === 0) return;
 
@@ -49,42 +61,24 @@ function LyricStudioPage() {
 	};
 
 	return (
-		<main className="container relative min-h-screen py-6">
-			<LyricStudioHeader trackLoaded={trackLoaded} />
+		<div
+			className="grid gap-6"
+			style={{
+				gridTemplateColumns:
+					showPreview || showExternalLyrics ? '1fr 1fr' : '1fr',
+			}}
+		>
+			<LyricEditor />
 
-			{/* Main content area */}
-			<div
-				className="grid gap-6"
-				style={{
-					gridTemplateColumns:
-						showPreview || showExternalLyrics ? '1fr 1fr' : '1fr',
-				}}
-			>
-				<LyricEditor />
+			{/* Lyrics preview or external lyrics section */}
+			{showPreview && !showExternalLyrics && <LyricPreviewSection />}
 
-				{/* Lyrics preview or external lyrics section */}
-				{showPreview && !showExternalLyrics && <LyricPreviewSection />}
-
-				{/* External lyrics input */}
-				{showExternalLyrics && (
-					<ExternalLyricsSection
-						onConvertToLines={addLinesFromExternal}
-					/>
-				)}
-			</div>
-
-			{/* Spacer for fixed player */}
-			<div className="h-58"></div>
-
-			{/* Floating track player with integrated timestamp */}
-			<div className="fixed bottom-6 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 transform">
-				<TrackUploadWrapper
-					iconColor="text-blue-500"
-					showDownload={false}
-					onAudioLoad={() => setTrackLoaded(true)}
-					onAudioRemove={() => setTrackLoaded(false)}
+			{/* External lyrics input */}
+			{showExternalLyrics && (
+				<ExternalLyricsSection
+					onConvertToLines={addLinesFromExternal}
 				/>
-			</div>
-		</main>
+			)}
+		</div>
 	);
-}
+};

@@ -15,20 +15,18 @@ import {
 } from './ui/alert-dialog';
 import { useTrackUploadStore } from '@/stores/track-upload-wrapper/store';
 import { useAudioRef } from '@/hooks/use-audio-ref';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
 
 interface TrackUploadWrapperProps {
 	iconColor?: string;
 	showDownload?: boolean;
-	onAudioLoad?: () => void;
-	onAudioRemove?: () => void;
 }
 
 export function TrackUploadWrapper({
 	iconColor = 'text-primary',
 	showDownload = false,
-	onAudioRemove,
-	onAudioLoad,
 }: TrackUploadWrapperProps) {
+	const { setTrackLoaded } = useLyricStudioStore();
 	const {
 		audioFile,
 		audioUrl,
@@ -79,7 +77,7 @@ export function TrackUploadWrapper({
 				onDragEnter={handleDragEnter}
 				onDragLeave={handleDragLeave}
 				onDragOver={handleDragOver}
-				onDrop={(e) => handleDrop(e, onAudioLoad)}
+				onDrop={(e) => handleDrop(e, () => setTrackLoaded(true))}
 			>
 				<div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
 					<Upload className="h-8 w-8 text-primary" />
@@ -143,7 +141,9 @@ export function TrackUploadWrapper({
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={() =>
-								handleRemoveAudio(audioRef, onAudioRemove)
+								handleRemoveAudio(audioRef, () =>
+									setTrackLoaded(false)
+								)
 							}
 						>
 							Remove
