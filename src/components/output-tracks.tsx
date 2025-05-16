@@ -1,7 +1,6 @@
 import { Mic, Music, RotateCcw } from 'lucide-react';
 import { TrackPlayer } from './track-player';
 import { Button } from './ui/button';
-import { getOutputPath } from '@/data/api';
 import { useState } from 'react';
 import {
 	AlertDialog,
@@ -14,32 +13,14 @@ import {
 	AlertDialogTitle,
 } from './ui/alert-dialog';
 
-export function OutputTracks({
-	resetState,
-	instrumentalOutputPath,
-	vocalOutputPath,
-}: {
-	vocalOutputPath?: string;
-	instrumentalOutputPath?: string;
-	resetState: () => void;
-}) {
+export function OutputTracks({ resetState }: { resetState: () => void }) {
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
 	return (
 		<div className="space-y-4">
-			<TrackPlayer
-				title="Vocals Track"
-				icon={Mic}
-				iconColor="text-primary"
-				src={getOutputPath(vocalOutputPath)}
-			/>
+			<TrackPlayer icon={Mic} iconColor="text-primary" />
 
-			<TrackPlayer
-				title="Instrumental Track"
-				icon={Music}
-				iconColor="text-primary"
-				src={getOutputPath(instrumentalOutputPath)}
-			/>
+			<TrackPlayer icon={Music} iconColor="text-primary" />
 
 			<Button
 				variant="ghost"

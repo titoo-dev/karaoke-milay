@@ -46,7 +46,7 @@ export function AudioUploadCard({
 
 				{file && <FileDetails file={file} />}
 
-				{audioUrl && <AudioPreview audioUrl={audioUrl} />}
+				{audioUrl && <AudioPreview />}
 
 				<ActionButtons
 					file={file}

@@ -43,13 +43,7 @@ export function OutputTracksCard({
 				{isProcessing && <ProcessingIndicator />}
 
 				{isSuccess && separationResponse && (
-					<OutputTracks
-						vocalOutputPath={separationResponse.files.vocals}
-						instrumentalOutputPath={
-							separationResponse.files.instrumental
-						}
-						resetState={resetState}
-					/>
+					<OutputTracks resetState={resetState} />
 				)}
 
 				{separationResponse === null && !isProcessing && !isSuccess && (
