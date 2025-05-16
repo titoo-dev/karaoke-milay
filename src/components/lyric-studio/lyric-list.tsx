@@ -1,22 +1,42 @@
 import { PlusCircle } from 'lucide-react';
 import { Button } from '../ui/button';
-import { LyricLineItem, type LyricLine } from './lyric-line-item';
+import { LyricLineItem } from './lyric-line-item';
+import { useLyricStudioStore } from '@/stores/lyric-studio/store';
+import { useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
-export function LyricList({
-	lyricLines,
-	onUpdateLine,
-	onDeleteLine,
-	onJumpToLine,
-	onSetCurrentTime,
-	onAddLine,
-}: {
-	lyricLines: LyricLine[];
-	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
-	onDeleteLine: (id: number) => void;
-	onJumpToLine: (id: number) => void;
-	onSetCurrentTime: (id: number) => void;
-	onAddLine: () => void;
-}) {
+export function LyricList() {
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const {
+		lyricLines,
+		updateLyricLine,
+		deleteLyricLine,
+		jumpToLyricLine,
+		setCurrentTimeAsTimestamp,
+		addLyricLine,
+	} = useLyricStudioStore(
+		useShallow((state) => ({
+			lyricLines: state.lyricLines,
+			updateLyricLine: state.updateLyricLine,
+			deleteLyricLine: state.deleteLyricLine,
+			jumpToLyricLine: state.jumpToLyricLine,
+			setCurrentTimeAsTimestamp: state.setCurrentTimeAsTimestamp,
+			addLyricLine: state.addLyricLine,
+		}))
+	);
+
+	const handleJumpToLine = (id: number) => {
+		jumpToLyricLine(id, audioRef.current);
+	};
+
+	const handleSetCurrentTime = (id: number) => {
+		setCurrentTimeAsTimestamp(id, audioRef.current);
+	};
+
+	const handleAddLine = () => {
+		addLyricLine(audioRef.current);
+	};
+
 	return (
 		<div>
 			<div className="space-y-3">
@@ -25,17 +45,21 @@ export function LyricList({
 						key={line.id}
 						line={line}
 						index={index}
-						onUpdateLine={onUpdateLine}
-						onDeleteLine={onDeleteLine}
-						onJumpToLine={onJumpToLine}
-						onSetCurrentTime={onSetCurrentTime}
+						onUpdateLine={updateLyricLine}
+						onDeleteLine={deleteLyricLine}
+						onJumpToLine={handleJumpToLine}
+						onSetCurrentTime={handleSetCurrentTime}
 						canUseCurrentTime
 					/>
 				))}
 			</div>
 
 			<div className="flex justify-center mt-6 gap-3">
-				<Button onClick={onAddLine} variant="outline" className="gap-2">
+				<Button
+					onClick={handleAddLine}
+					variant="outline"
+					className="gap-2"
+				>
 					<PlusCircle className="h-4 w-4" />
 					Add Line
 				</Button>

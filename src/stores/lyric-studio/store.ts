@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { formatLRCTimestamp } from '@/lib/utils';
 import type { LyricLine } from '@/components/lyric-studio/lyric-line-item';
-import type { LRCData } from '@/components/lyric-studio/lyric-header';
+import type { LRCData } from '@/components/lyric-studio/lyric-editor-header';
 
 interface LyricStudioState {
 	lyricLines: LyricLine[];
