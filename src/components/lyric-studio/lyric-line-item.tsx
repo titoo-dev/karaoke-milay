@@ -8,7 +8,7 @@ import { memo } from 'react';
 export interface LyricLine {
 	id: number;
 	text: string;
-	timestamp: number;
+	timestamp?: number;
 }
 
 interface LyricLineItemProps {

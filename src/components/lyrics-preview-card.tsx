@@ -3,18 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useAppContext } from '@/hooks/use-app-context';
 
-interface LyricLine {
-	id: number;
-	text: string;
-	timestamp: number;
-}
-
-interface LyricsPreviewCardProps {
-	lyrics: LyricLine[];
-}
-
-export function LyricsPreviewCard({ lyrics }: LyricsPreviewCardProps) {
-	const { audioRef, trackLoaded, jumpToLyricLine } = useAppContext();
+export function LyricsPreviewCard() {
+	const { audioRef, trackLoaded, jumpToLyricLine, lyricLines } =
+		useAppContext();
 
 	const [currentTime, setCurrentTime] = useState(0);
 	const [activeLyricId, setActiveLyricId] = useState<number | null>(null);
@@ -36,17 +27,17 @@ export function LyricsPreviewCard({ lyrics }: LyricsPreviewCardProps) {
 
 	// Find the active lyric based on current time
 	useEffect(() => {
-		if (!lyrics.length) return;
+		if (!lyricLines.length) return;
 
 		// Sort lyrics by timestamp
-		const sortedLyrics = [...lyrics].sort(
-			(a, b) => a.timestamp - b.timestamp
+		const sortedLyrics = [...lyricLines].sort(
+			(a, b) => (a.timestamp || 0) - (b.timestamp || 0)
 		);
 
 		// Find the last lyric whose timestamp is less than or equal to current time
 		let activeIndex = -1;
 		for (let i = 0; i < sortedLyrics.length; i++) {
-			if (sortedLyrics[i].timestamp <= currentTime) {
+			if ((sortedLyrics[i].timestamp || 0) <= currentTime) {
 				activeIndex = i;
 			} else {
 				break;
@@ -56,7 +47,7 @@ export function LyricsPreviewCard({ lyrics }: LyricsPreviewCardProps) {
 		setActiveLyricId(
 			activeIndex >= 0 ? sortedLyrics[activeIndex].id : null
 		);
-	}, [lyrics, currentTime]);
+	}, [lyricLines, currentTime]);
 
 	// Scroll to active lyric
 	useEffect(() => {
@@ -68,17 +59,19 @@ export function LyricsPreviewCard({ lyrics }: LyricsPreviewCardProps) {
 		}
 	}, [activeLyricId]);
 
+	// Sort lyrics by timestamp for display
+	const sortedLyrics = [
+		...lyricLines.filter((line) => line.timestamp !== undefined),
+	].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
 	// If no lyrics, show a placeholder
-	if (!lyrics.length) {
+	if (!sortedLyrics.length) {
 		return (
 			<div className="flex items-center justify-center h-60 text-muted-foreground">
 				No lyrics to preview
 			</div>
 		);
 	}
-
-	// Sort lyrics by timestamp for display
-	const sortedLyrics = [...lyrics].sort((a, b) => a.timestamp - b.timestamp);
 
 	return (
 		<div className="lyrics-preview-container bg-background/50 backdrop-blur-sm p-6 overflow-hidden relative">

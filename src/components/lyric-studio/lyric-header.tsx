@@ -2,6 +2,7 @@ import { Download, Eye, Music, FileText } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/card';
 import type { LyricLine } from './lyric-line-item';
 import { Button } from '../ui/button';
+import { useAppContext } from '@/hooks/use-app-context';
 
 interface LyricMetadata {
 	title: string;
@@ -34,6 +35,7 @@ export function LyricHeader({
 	showExternalLyrics: boolean;
 	onShowExternalLyrics: () => void;
 }) {
+	const { areLyricLinesWithoutTimestamps } = useAppContext();
 	return (
 		<CardHeader className="flex flex-row items-center justify-between py-8 border-b">
 			<CardTitle className="flex items-center gap-2">
@@ -68,7 +70,11 @@ export function LyricHeader({
 				</Button>
 				<Button
 					onClick={generateLRC}
-					disabled={hasEmptyLyricLines() || lyricLines.length === 0}
+					disabled={
+						hasEmptyLyricLines() ||
+						lyricLines.length === 0 ||
+						areLyricLinesWithoutTimestamps()
+					}
 					variant={
 						hasEmptyLyricLines() || lyricLines.length === 0
 							? 'outline'

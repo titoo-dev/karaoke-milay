@@ -29,17 +29,21 @@ function LyricStudioPage() {
 
 			// Ensure the new timestamp follows ascending sequence
 			let newTimestamp = currentTimestamp;
-			const prevTimestamp = newLines[index].timestamp;
+			const prevTimestamp = newLines[index]?.timestamp || 0;
 			const nextTimestamp =
 				index < newLines.length - 1
 					? newLines[index + 1].timestamp
 					: Infinity;
 
 			// Make sure timestamp is between prev and next
-			if (newTimestamp <= prevTimestamp) {
+			if (prevTimestamp !== undefined && newTimestamp <= prevTimestamp) {
 				newTimestamp = prevTimestamp + 0.5; // Add a small increment
 			}
-			if (nextTimestamp !== Infinity && newTimestamp >= nextTimestamp) {
+			if (
+				nextTimestamp !== undefined &&
+				nextTimestamp !== Infinity &&
+				newTimestamp >= nextTimestamp
+			) {
 				newTimestamp = (prevTimestamp + nextTimestamp) / 2; // Use middle point
 			}
 
@@ -55,7 +59,10 @@ function LyricStudioPage() {
 			if (lyricLines.length > 0) {
 				const lastTimestamp =
 					lyricLines[lyricLines.length - 1].timestamp;
-				if (newTimestamp <= lastTimestamp) {
+				if (
+					lastTimestamp !== undefined &&
+					newTimestamp <= lastTimestamp
+				) {
 					newTimestamp = lastTimestamp + 0.5; // Add a small increment
 				}
 			}
@@ -96,7 +103,7 @@ function LyricStudioPage() {
 	const generateLRC = (): LRCData => {
 		// Sort lyrics by timestamp to ensure proper order
 		const sortedLyrics = [...lyricLines].sort(
-			(a, b) => a.timestamp - b.timestamp
+			(a, b) => (a.timestamp || 0) - (b.timestamp || 0)
 		);
 
 		const lrcData: LRCData = {
@@ -105,7 +112,7 @@ function LyricStudioPage() {
 				artist: 'Unknown Artist',
 				album: 'Unknown Album',
 				timestamps: sortedLyrics.map((line) => ({
-					time: formatLRCTimestamp(line.timestamp),
+					time: formatLRCTimestamp(line.timestamp || 0),
 					text: line.text,
 				})),
 			},
@@ -124,11 +131,10 @@ function LyricStudioPage() {
 			const newId =
 				Math.max(0, ...lyricLines.map((line) => line.id)) + index + 1;
 			// Add 2 seconds between each line
-			const timestamp = 0;
 			return {
 				id: newId,
 				text,
-				timestamp,
+				timestamp: undefined,
 			};
 		});
 
@@ -162,9 +168,7 @@ function LyricStudioPage() {
 				/>
 
 				{/* Lyrics preview or external lyrics section */}
-				{showPreview && !showExternalLyrics && (
-					<LyricPreviewSection lyrics={lyricLines} />
-				)}
+				{showPreview && !showExternalLyrics && <LyricPreviewSection />}
 
 				{/* External lyrics input */}
 				{showExternalLyrics && (
