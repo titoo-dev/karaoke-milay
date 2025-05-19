@@ -6,14 +6,12 @@ export function LyricList({
 	lyricLines,
 	onUpdateLine,
 	onDeleteLine,
-	onJumpToLine,
 	onSetCurrentTime,
 	onAddLine,
 }: {
 	lyricLines: LyricLine[];
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
-	onJumpToLine: (id: number) => void;
 	onSetCurrentTime: (id: number) => void;
 	onAddLine: () => void;
 }) {
@@ -27,7 +25,6 @@ export function LyricList({
 						index={index}
 						onUpdateLine={onUpdateLine}
 						onDeleteLine={onDeleteLine}
-						onJumpToLine={onJumpToLine}
 						onSetCurrentTime={onSetCurrentTime}
 						canUseCurrentTime
 					/>

@@ -12,7 +12,6 @@ export function LyricEditor({
 	hasEmptyLyricLines,
 	onUpdateLine,
 	onDeleteLine,
-	onJumpToLine,
 	onSetCurrentTime,
 	onAddLine,
 	showExternalLyrics,
@@ -25,7 +24,6 @@ export function LyricEditor({
 	hasEmptyLyricLines: () => boolean;
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
-	onJumpToLine: (id: number) => void;
 	onSetCurrentTime: (id: number) => void;
 	onAddLine: (afterId?: number) => void;
 	showExternalLyrics: boolean;
@@ -53,7 +51,6 @@ export function LyricEditor({
 						lyricLines={lyricLines}
 						onUpdateLine={onUpdateLine}
 						onDeleteLine={onDeleteLine}
-						onJumpToLine={onJumpToLine}
 						onSetCurrentTime={onSetCurrentTime}
 						onAddLine={() => onAddLine()}
 					/>

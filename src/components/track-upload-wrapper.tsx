@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ComponentRef } from 'react';
 import { Music, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TrackPlayer } from './track-player';
@@ -13,27 +13,25 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from './ui/alert-dialog';
+import { useAppContext } from '@/hooks/use-app-context';
 
 interface TrackUploadWrapperProps {
-	audioRef: React.RefObject<HTMLAudioElement>;
+	audioRef: React.RefObject<ComponentRef<'audio'> | null>;
 	iconColor?: string;
 	showDownload?: boolean;
-	onAudioLoad?: () => void;
-	onAudioRemove?: () => void;
 }
 
 export function TrackUploadWrapper({
 	audioRef,
 	iconColor = 'text-primary',
 	showDownload = false,
-	onAudioLoad,
-	onAudioRemove,
 }: TrackUploadWrapperProps) {
 	const [audioFile, setAudioFile] = useState<File | null>(null);
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
 	const [isDragging, setIsDragging] = useState(false);
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const { setTrackLoaded } = useAppContext();
 
 	// Clean up object URL on unmount
 	useEffect(() => {
@@ -54,10 +52,7 @@ export function TrackUploadWrapper({
 		const url = URL.createObjectURL(file);
 		setAudioUrl(url);
 
-		// Call the onAudioLoad callback if provided
-		if (onAudioLoad) {
-			onAudioLoad();
-		}
+		setTrackLoaded(true);
 	};
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,9 +105,7 @@ export function TrackUploadWrapper({
 		}
 
 		// Call the onAudioRemove callback if provided
-		if (onAudioRemove) {
-			onAudioRemove();
-		}
+		setTrackLoaded(false);
 	};
 
 	const handleBrowseClick = () => {
@@ -180,7 +173,6 @@ export function TrackUploadWrapper({
 				iconColor={iconColor}
 				src={audioUrl}
 				showDownload={showDownload}
-				audioRef={audioRef}
 			/>
 
 			<AlertDialog

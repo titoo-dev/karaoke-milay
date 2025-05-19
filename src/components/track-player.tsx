@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Download, AudioLines } from 'lucide-react';
 import { Controls, type AudioPlayerState } from './track-player/controls';
 import { Waveform } from './track-player/wave-form';
+import { useAppContext } from '@/hooks/use-app-context';
 
 type TrackPlayerProps = {
 	title: string;
@@ -21,15 +22,13 @@ export function TrackPlayer({
 	showDownload = true,
 	showWaveform = true,
 	onTimeUpdate,
-	audioRef: externalAudioRef,
 }: TrackPlayerProps & {
 	showWaveform?: boolean;
 	onTimeUpdate?: (time: number) => void;
-	audioRef?: React.RefObject<HTMLAudioElement>;
 }) {
-	const internalAudioRef = useRef<HTMLAudioElement>(null);
+	const { audioRef } = useAppContext();
 	const playerRef = useRef<HTMLDivElement>(null);
-	const [waveBars] = useState(() =>
+	const [waveBars] = useState(
 		Array.from({ length: 50 }, () => Math.random() * 0.8 + 0.2)
 	);
 	const [isWaveformVisible, setIsWaveformVisible] = useState(showWaveform);
@@ -41,19 +40,19 @@ export function TrackPlayer({
 		isMuted: false,
 	});
 
-	// Use the external ref if provided, otherwise use internal ref
-	const audioRefToUse = externalAudioRef || internalAudioRef;
-
 	useEffect(() => {
-		const audio = audioRefToUse.current;
+		const audio = audioRef.current;
 		if (!audio) return;
 
 		const handlers = {
 			loadedmetadata: () =>
-				setAudioState((s) => ({ ...s, duration: audio.duration })),
+				setAudioState((oldState) => ({
+					...oldState,
+					duration: audio.duration,
+				})),
 			timeupdate: () => {
-				setAudioState((s) => ({
-					...s,
+				setAudioState((oldState) => ({
+					...oldState,
 					currentTime: audio.currentTime,
 				}));
 				if (onTimeUpdate) {
@@ -72,7 +71,7 @@ export function TrackPlayer({
 				audio?.removeEventListener(event, handler);
 			});
 		};
-	}, [audioRefToUse, onTimeUpdate]);
+	}, [audioRef, onTimeUpdate]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -94,11 +93,11 @@ export function TrackPlayer({
 	}, [audioState.isPlaying]);
 
 	const handlePlayPause = () => {
-		if (audioRefToUse.current) {
+		if (audioRef.current) {
 			if (audioState.isPlaying) {
-				audioRefToUse.current.pause();
+				audioRef.current.pause();
 			} else {
-				audioRefToUse.current.play();
+				audioRef.current.play();
 			}
 			setAudioState((s) => ({ ...s, isPlaying: !s.isPlaying }));
 		}
@@ -106,8 +105,8 @@ export function TrackPlayer({
 
 	const handleTimeChange = (value: number[]) => {
 		const newTime = value[0];
-		if (audioRefToUse.current) {
-			audioRefToUse.current.currentTime = newTime;
+		if (audioRef.current) {
+			audioRef.current.currentTime = newTime;
 			setAudioState((s) => ({ ...s, currentTime: newTime }));
 			if (onTimeUpdate) {
 				onTimeUpdate(newTime);
@@ -117,21 +116,21 @@ export function TrackPlayer({
 
 	const handleVolumeChange = (value: number[]) => {
 		const newVolume = value[0];
-		if (audioRefToUse.current) {
-			audioRefToUse.current.volume = newVolume;
+		if (audioRef.current) {
+			audioRef.current.volume = newVolume;
 			setAudioState((s) => ({ ...s, volume: newVolume }));
 		}
 	};
 
 	const handleMuteToggle = () => {
-		if (audioRefToUse.current) {
-			audioRefToUse.current.muted = !audioState.isMuted;
+		if (audioRef.current) {
+			audioRef.current.muted = !audioState.isMuted;
 			setAudioState((s) => ({ ...s, isMuted: !s.isMuted }));
 		}
 	};
 
 	const handleWaveBarClick = (index: number) => {
-		if (audioRefToUse.current && audioState.duration) {
+		if (audioRef.current && audioState.duration) {
 			const newTime = (index / waveBars.length) * audioState.duration;
 			handleTimeChange([newTime]);
 		}
@@ -182,7 +181,7 @@ export function TrackPlayer({
 				</div>
 			</div>
 
-			<audio ref={audioRefToUse} src={src} className="hidden" />
+			<audio ref={audioRef} src={src} className="hidden" />
 
 			{showWaveform && isWaveformVisible && (
 				<Waveform

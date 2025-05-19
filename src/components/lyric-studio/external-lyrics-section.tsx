@@ -2,7 +2,7 @@ import { ArrowRightCircle, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
-import { useState } from 'react';
+import { useAppContext } from '@/hooks/use-app-context';
 
 interface ExternalLyricsSectionProps {
 	onConvertToLines: (lines: string[]) => void;
@@ -11,8 +11,7 @@ interface ExternalLyricsSectionProps {
 export function ExternalLyricsSection({
 	onConvertToLines,
 }: ExternalLyricsSectionProps) {
-	const [externalLyrics, setExternalLyrics] = useState<string>('');
-
+	const { externalLyrics, setExternalLyrics } = useAppContext();
 	const handleConvertToLines = () => {
 		// Split the text into lines and filter out empty lines
 		const lines = externalLyrics

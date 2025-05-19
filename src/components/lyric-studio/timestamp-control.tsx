@@ -1,11 +1,12 @@
 import { formatTimestamp } from '@/lib/utils';
+import { Button } from '../ui/button';
+import { useAppContext } from '@/hooks/use-app-context';
 
 // Component for the timestamp control
 interface TimestampControlProps {
 	timestamp: number;
 	lineId: number;
 	canSetCurrentTime: boolean;
-	onJumpToTimestamp: (id: number) => void;
 	onSetCurrentTime: (id: number) => void;
 }
 
@@ -13,20 +14,20 @@ export function TimestampControl({
 	timestamp,
 	lineId,
 	canSetCurrentTime,
-	onJumpToTimestamp,
 	onSetCurrentTime,
 }: TimestampControlProps) {
+	const { jumpToLyricLine } = useAppContext();
 	return (
 		<div className="flex items-center gap-2 rounded-lg border bg-background/50 backdrop-blur-sm p-2">
-			<button
-				onClick={() => onJumpToTimestamp(lineId)}
-				className="flex items-center gap-2 hover:bg-primary/10 hover:cursor-pointer rounded-sm px-2 py-2 transition-colors"
+			<Button
+				onClick={() => jumpToLyricLine(lineId)}
+				className="flex items-center gap-2 hover:bg-primary/80 hover:cursor-pointer rounded-sm px-2 py-2 transition-colors"
 				title="Jump to this timestamp"
 			>
 				<span className="w-20 text-center text-sm font-mono">
 					{formatTimestamp(timestamp)}
 				</span>
-			</button>
+			</Button>
 
 			<button
 				onClick={() => onSetCurrentTime(lineId)}

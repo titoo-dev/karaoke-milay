@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { useAppContext } from '@/hooks/use-app-context';
 
 interface LyricLine {
 	id: number;
@@ -10,18 +11,28 @@ interface LyricLine {
 
 interface LyricsPreviewCardProps {
 	lyrics: LyricLine[];
-	currentTime: number;
-	onLyricClick?: (id: number) => void;
 }
 
-export function LyricsPreviewCard({
-	lyrics,
-	currentTime,
-	onLyricClick,
-}: LyricsPreviewCardProps) {
+export function LyricsPreviewCard({ lyrics }: LyricsPreviewCardProps) {
+	const { audioRef, trackLoaded, jumpToLyricLine } = useAppContext();
+
+	const [currentTime, setCurrentTime] = useState(0);
 	const [activeLyricId, setActiveLyricId] = useState<number | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const activeLineRef = useRef<HTMLDivElement>(null);
+
+	// Update current time when audio plays
+	useEffect(() => {
+		const audio = audioRef.current;
+		if (!audio) return;
+
+		const updateTime = () => setCurrentTime(audio.currentTime);
+		audio.addEventListener('timeupdate', updateTime);
+
+		return () => {
+			audio.removeEventListener('timeupdate', updateTime);
+		};
+	}, [trackLoaded]); // Re-run effect when audio track changes
 
 	// Find the active lyric based on current time
 	useEffect(() => {
@@ -96,7 +107,7 @@ export function LyricsPreviewCard({
 									transition: { duration: 0.3 },
 								}}
 								exit={{ opacity: 0, y: -20 }}
-								onClick={() => onLyricClick?.(line.id)}
+								onClick={() => jumpToLyricLine(line.id)}
 								style={{
 									position: 'relative',
 									zIndex: isActive ? 2 : 1,

@@ -17,7 +17,6 @@ interface LyricLineItemProps {
 	canUseCurrentTime: boolean;
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
-	onJumpToLine: (id: number) => void;
 	onSetCurrentTime: (id: number) => void;
 }
 
@@ -27,7 +26,6 @@ export function LyricLineItem({
 	canUseCurrentTime,
 	onUpdateLine,
 	onDeleteLine,
-	onJumpToLine,
 	onSetCurrentTime,
 }: LyricLineItemProps) {
 	return (
@@ -58,7 +56,6 @@ export function LyricLineItem({
 						timestamp={line.timestamp}
 						lineId={line.id}
 						canSetCurrentTime={canUseCurrentTime}
-						onJumpToTimestamp={onJumpToLine}
 						onSetCurrentTime={onSetCurrentTime}
 					/>
 
