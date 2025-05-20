@@ -1,6 +1,6 @@
 import { Card, CardContent } from '../ui/card';
 import { EmptyLyrics } from './empty-lyrics';
-import { LyricHeader, type LRCData } from './lyric-header';
+import { LyricHeader } from './lyric-header';
 import type { LyricLine } from './lyric-line-item';
 import { LyricList } from './lyric-list';
 
@@ -8,7 +8,6 @@ export function LyricEditor({
 	lyricLines,
 	showPreview,
 	setShowPreview,
-	generateLRC,
 	hasEmptyLyricLines,
 	onUpdateLine,
 	onDeleteLine,
@@ -20,7 +19,6 @@ export function LyricEditor({
 	lyricLines: LyricLine[];
 	showPreview: boolean;
 	setShowPreview: (show: boolean) => void;
-	generateLRC: () => LRCData;
 	hasEmptyLyricLines: () => boolean;
 	onUpdateLine: (id: number, data: Partial<LyricLine>) => void;
 	onDeleteLine: (id: number) => void;
@@ -34,7 +32,6 @@ export function LyricEditor({
 			<LyricHeader
 				showPreview={showPreview}
 				setShowPreview={setShowPreview}
-				generateLRC={generateLRC}
 				hasEmptyLyricLines={hasEmptyLyricLines}
 				lyricLines={lyricLines}
 				onShowExternalLyrics={() =>

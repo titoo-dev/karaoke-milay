@@ -2,8 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { TrackUploadWrapper } from '@/components/track-upload-wrapper';
 import { useState, memo } from 'react';
 import { type LyricLine } from '@/components/lyric-studio/lyric-line-item';
-import { formatLRCTimestamp } from '@/lib/utils';
-import type { LRCData } from '@/components/lyric-studio/lyric-header';
 import { LyricEditor } from '@/components/lyric-studio/lyric-editor';
 import { LyricPreviewSection } from '@/components/lyric-studio/lyric-preview-section';
 import { ExternalLyricsSection } from '@/components/lyric-studio/external-lyrics-section';
@@ -99,29 +97,6 @@ function LyricStudioPage() {
 		return lyricLines.some((line) => line.text.trim() === '');
 	};
 
-	// Generate LRC format and log it
-	const generateLRC = (): LRCData => {
-		// Sort lyrics by timestamp to ensure proper order
-		const sortedLyrics = [...lyricLines].sort(
-			(a, b) => (a.timestamp || 0) - (b.timestamp || 0)
-		);
-
-		const lrcData: LRCData = {
-			metadata: {
-				title: 'Untitled Song',
-				artist: 'Unknown Artist',
-				album: 'Unknown Album',
-				timestamps: sortedLyrics.map((line) => ({
-					time: formatLRCTimestamp(line.timestamp || 0),
-					text: line.text,
-				})),
-			},
-		};
-
-		console.log('LRC Data (JSON format):', lrcData);
-		return lrcData;
-	};
-
 	// Function to add multiple lines from external lyrics
 	const addLinesFromExternal = (externalLines: string[]) => {
 		if (externalLines.length === 0) return;
@@ -157,7 +132,6 @@ function LyricStudioPage() {
 					lyricLines={lyricLines}
 					showPreview={showPreview}
 					setShowPreview={setShowPreview}
-					generateLRC={generateLRC}
 					hasEmptyLyricLines={hasEmptyLyricLines}
 					onUpdateLine={updateLyricLine}
 					onDeleteLine={deleteLyricLine}
