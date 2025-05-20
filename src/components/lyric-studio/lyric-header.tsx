@@ -4,6 +4,7 @@ import type { LyricLine } from './lyric-line-item';
 import { Button } from '../ui/button';
 import { useAppContext } from '@/hooks/use-app-context';
 import { formatLRCTimestamp } from '@/lib/utils';
+import { useCallback } from 'react';
 
 interface LyricMetadata {
 	title: string;
@@ -58,7 +59,7 @@ export function LyricHeader({
 		return lrcData;
 	};
 
-	const handleDownload = () => {
+	const handleDownload = useCallback(() => {
 		const lrcData = generateLRC();
 
 		// Generate LRC content
@@ -81,7 +82,7 @@ export function LyricHeader({
 		a.click();
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
-	};
+	}, [lyricLines]);
 	return (
 		<CardHeader className="flex flex-row items-center justify-between py-8 border-b">
 			<CardTitle className="flex items-center gap-2">
