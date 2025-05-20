@@ -57,9 +57,9 @@ export function LyricHeader({
 
 		console.log('LRC Data (JSON format):', lrcData);
 		return lrcData;
-	};
+	}, [lyricLines]);
 
-	const handleDownload = useCallback(() => {
+	const handleDownload = () => {
 		const lrcData = generateLRC();
 
 		// Generate LRC content
@@ -82,7 +82,7 @@ export function LyricHeader({
 		a.click();
 		document.body.removeChild(a);
 		URL.revokeObjectURL(url);
-	}, [lyricLines]);
+	};
 	return (
 		<CardHeader className="flex flex-row items-center justify-between py-8 border-b">
 			<CardTitle className="flex items-center gap-2">
