@@ -37,7 +37,7 @@ export function LyricHeader({
 }) {
 	const { areLyricLinesWithoutTimestamps } = useAppContext();
 
-	const generateLRC = () => {
+	const generateLRC = useCallback(() => {
 		// Sort lyrics by timestamp to ensure proper order
 		const sortedLyrics = [...lyricLines].sort(
 			(a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0)
